@@ -1,5 +1,5 @@
-# neurotriumph__server
-#### Turing test online platform..
+# neurotriumph__server 🤖
+#### Turing test online platform.
 ## How to start? :eyes:
 > Work done in IntellijIDEA
 
