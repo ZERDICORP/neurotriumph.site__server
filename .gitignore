@@ -6,6 +6,7 @@ target/
 
 ### Config ###
 /src/main/resources/application.properties
+/src/test/resources/test.properties
 
 ### STS ###
 .apt_generated
