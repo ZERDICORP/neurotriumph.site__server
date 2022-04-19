@@ -4,6 +4,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import site.neurotriumph.www.annotation.WithConfirmationToken;
@@ -20,7 +21,7 @@ public class AuthController {
   @Autowired
   private AuthService authService;
 
-  @PostMapping("/register/confirm")
+  @PutMapping("/register/confirm")
   @WithConfirmationToken(TokenMarker.REGISTRATION_CONFIRMATION)
   public void confirmRegistration(@Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
                                   DecodedJWT decodedJWT) {
