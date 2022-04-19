@@ -28,6 +28,7 @@ import java.util.List;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -39,9 +40,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource("/test.properties")
 public class RegisterIntegrationTest {
   private final String baseUrl = "/register";
-
-  @Value("${app.secret}")
-  private String appSecret;
 
   @Value("${spring.mail.username}")
   private String senderEmail;
@@ -171,19 +169,13 @@ public class RegisterIntegrationTest {
       MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
       assertEquals(1, receivedMessages.length);
 
-      /*
-      * Token Payload:
-      * { "uid": 1 }
-      * */
-      final String expectedToken =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjF9.EXwYfVCKTHYYssS5ipKMgi49Mj_HU4GurKm0m8eWDqc\r\n";
-
       MimeMessage receivedMessage = receivedMessages[0];
       assertEquals("Neuro Triumph", receivedMessage.getSubject());
-      assertEquals(expectedToken, receivedMessage.getContent());
       assertEquals(1, receivedMessage.getAllRecipients().length);
       assertEquals(registerRequestBody.getEmail(),
         receivedMessage.getAllRecipients()[0].toString());
+
+      assertTrue(receivedMessage.getContent().toString().length() > 0);
     });
   }
 }
