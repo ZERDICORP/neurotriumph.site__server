@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import site.neurotriumph.www.annotation.WithConfirmationToken;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.ConfirmationRequestBody;
+import site.neurotriumph.www.pojo.LoginRequestBody;
+import site.neurotriumph.www.pojo.LoginResponseBody;
 import site.neurotriumph.www.pojo.RegisterRequestBody;
 import site.neurotriumph.www.service.AuthService;
 
@@ -20,6 +22,11 @@ import javax.validation.Valid;
 public class AuthController {
   @Autowired
   private AuthService authService;
+
+  @PostMapping("/login")
+  public LoginResponseBody login(@Valid @RequestBody LoginRequestBody loginRequestBody) {
+    return authService.login(loginRequestBody);
+  }
 
   @PutMapping("/register/confirm")
   @WithConfirmationToken(TokenMarker.REGISTRATION_CONFIRMATION)

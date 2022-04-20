@@ -10,11 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.entity.User;
 import site.neurotriumph.www.repository.UserRepository;
 import site.neurotriumph.www.service.AuthService;
 
 import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -32,28 +36,36 @@ public class ConfirmRegistrationUnitTest {
      * */
     "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjF9.1hF426wB0xOtHGdBwzgDo2LNs91fw5yF3tZ91aEqVyg");
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void shouldThrowIllegalStateExceptionBecauseUserAlreadyConfirmed() {
-    User user = Mockito.spy(new User());
-    user.setConfirmed(true);
+    IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+      User user = Mockito.spy(new User());
+      user.setConfirmed(true);
 
-    Mockito.doReturn(Optional.of(user))
-      .when(userRepository)
-      .findById(ArgumentMatchers.eq(1L));
+      Mockito.doReturn(Optional.of(user))
+        .when(userRepository)
+        .findById(ArgumentMatchers.eq(1L));
 
-    authService.confirmRegistration(decodedJWT);
+      authService.confirmRegistration(decodedJWT);
 
-    Mockito.verify(user, Mockito.times(1))
-      .isConfirmed();
+      Mockito.verify(user, Mockito.times(1))
+        .isConfirmed();
+    });
+
+    assertEquals(Message.USER_ALREADY_CONFIRMED, exception.getMessage());
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void shouldThrowIllegalStateExceptionBecauseUserDoesNotExist() {
-    Mockito.doReturn(Optional.empty())
-      .when(userRepository)
-      .findById(ArgumentMatchers.eq(1L));
+    IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+      Mockito.doReturn(Optional.empty())
+        .when(userRepository)
+        .findById(ArgumentMatchers.eq(1L));
 
-    authService.confirmRegistration(decodedJWT);
+      authService.confirmRegistration(decodedJWT);
+    });
+
+    assertEquals(Message.USER_DOES_NOT_EXIST, exception.getMessage());
   }
 
   @Test

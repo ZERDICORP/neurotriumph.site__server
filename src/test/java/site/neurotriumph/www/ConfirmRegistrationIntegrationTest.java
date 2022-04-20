@@ -23,7 +23,7 @@ import site.neurotriumph.www.pojo.ErrorResponseBody;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -54,7 +54,7 @@ public class ConfirmRegistrationIntegrationTest {
 
     ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
 
-    this.mockMvc.perform(post(baseUrl)
+    this.mockMvc.perform(put(baseUrl)
         .content(objectMapper.writeValueAsString(confirmationRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
@@ -71,7 +71,7 @@ public class ConfirmRegistrationIntegrationTest {
 
     ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
 
-    this.mockMvc.perform(post(baseUrl)
+    this.mockMvc.perform(put(baseUrl)
         .content(objectMapper.writeValueAsString(confirmationRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
@@ -107,7 +107,7 @@ public class ConfirmRegistrationIntegrationTest {
     for (String invalidToken : invalidTokens) {
       confirmationRequestBody.setToken(invalidToken);
 
-      this.mockMvc.perform(post(baseUrl)
+      this.mockMvc.perform(put(baseUrl)
           .content(objectMapper.writeValueAsString(confirmationRequestBody))
           .contentType(MediaType.APPLICATION_JSON))
         .andDo(print())
@@ -127,7 +127,7 @@ public class ConfirmRegistrationIntegrationTest {
 
     ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
 
-    this.mockMvc.perform(post(baseUrl)
+    this.mockMvc.perform(put(baseUrl)
         .content(objectMapper.writeValueAsString(confirmationRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())

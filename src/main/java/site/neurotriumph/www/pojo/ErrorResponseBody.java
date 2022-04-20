@@ -1,12 +1,11 @@
 package site.neurotriumph.www.pojo;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@ToString
 public class ErrorResponseBody {
   private String error;
-
-  public ErrorResponseBody(String error) {
-    this.error = error;
-  }
 }

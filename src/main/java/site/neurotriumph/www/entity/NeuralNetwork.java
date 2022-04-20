@@ -1,12 +1,18 @@
 package site.neurotriumph.www.entity;
 
-import lombok.Data;
+import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
 
-@Data
 @Entity
-@Table
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 @IdClass(NeuralNetworkUniqueness.class)
 public class NeuralNetwork {
   @Id
@@ -29,12 +35,4 @@ public class NeuralNetwork {
 
   @Column(columnDefinition = "TINYINT(1) DEFAULT 1", nullable = false)
   private boolean active;
-
-  public NeuralNetwork() {}
-  public NeuralNetwork(Long owner_id, String name, String api_root, String api_secret) {
-    this.owner_id = owner_id;
-    this.name = name;
-    this.api_root = api_root;
-    this.api_secret = api_secret;
-  }
 }

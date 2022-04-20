@@ -1,12 +1,15 @@
 package site.neurotriumph.www.entity;
 
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Data
 @Entity
-@Table
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,18 +24,8 @@ public class User {
   @Column(columnDefinition = "TINYINT(1) DEFAULT 0", nullable = false)
   private boolean confirmed;
 
-  public User() {
-  }
-
   public User(String email, String password_hash) {
     this.email = email;
     this.password_hash = password_hash;
-  }
-
-  public User(Long id, String email, String password_hash, Boolean confirmed) {
-    this.id = id;
-    this.email = email;
-    this.password_hash = password_hash;
-    this.confirmed = confirmed;
   }
 }

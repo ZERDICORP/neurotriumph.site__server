@@ -1,6 +1,9 @@
 package site.neurotriumph.www.constant;
 
+import java.util.concurrent.TimeUnit;
+
 public interface Const {
   int MIN_PASSWORD_LENGTH = 6;
-  int CONFIRMATION_TOKEN_LIFETIME = 1000 * 60 * 15;
+  long CONFIRMATION_TOKEN_LIFETIME = TimeUnit.MINUTES.toMillis(15);
+  long AUTH_TOKEN_LIFETIME = TimeUnit.DAYS.toMillis(15);
 }

@@ -7,11 +7,13 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.constant.Const;
 import site.neurotriumph.www.constant.Field;
 import site.neurotriumph.www.constant.Message;
+import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.entity.User;
+import site.neurotriumph.www.pojo.LoginRequestBody;
+import site.neurotriumph.www.pojo.LoginResponseBody;
 import site.neurotriumph.www.pojo.RegisterRequestBody;
 import site.neurotriumph.www.repository.UserRepository;
 
@@ -28,6 +30,25 @@ public class AuthService {
 
   @Autowired
   private MailSenderService mailSenderService;
+
+  public LoginResponseBody login(LoginRequestBody loginRequestBody) {
+    User user = userRepository.findByEmail(loginRequestBody.getEmail())
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    if (!user.isConfirmed())
+      throw new IllegalStateException(Message.USER_NOT_CONFIRMED);
+
+    if (!user.getPassword_hash()
+      .equals(DigestUtils.sha256Hex(loginRequestBody.getPassword())))
+      throw new IllegalStateException(Message.WRONG_PASSWORD);
+
+    String token = JWT.create()
+      .withClaim(Field.USER_ID, user.getId())
+      .withExpiresAt(new Date(System.currentTimeMillis() + Const.AUTH_TOKEN_LIFETIME))
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
+
+    return new LoginResponseBody(token, user.getId());
+  }
 
   @Transactional
   public void confirmRegistration(DecodedJWT decodedJWT) {
@@ -53,7 +74,6 @@ public class AuthService {
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, user.getId())
-      .withAudience()
       .withExpiresAt(new Date(System.currentTimeMillis() + Const.CONFIRMATION_TOKEN_LIFETIME))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.REGISTRATION_CONFIRMATION));
 
