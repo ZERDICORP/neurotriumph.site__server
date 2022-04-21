@@ -15,4 +15,5 @@ public interface Message {
   String USER_ALREADY_CONFIRMED = "user already confirmed";
   String USER_NOT_CONFIRMED = "user not confirmed";
   String WRONG_PASSWORD = "wrong password";
+  String TOKEN_EXPIRED = "token expired";
 }

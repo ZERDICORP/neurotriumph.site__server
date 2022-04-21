@@ -147,24 +147,15 @@ public class LoginIntegrationTest {
 
   @Test
   public void shouldReturnInvalidEmailError() throws Exception {
-    List<String> invalidEmails = new ArrayList<>();
-    invalidEmails.add("myemail.com");
-    invalidEmails.add("@email.com");
-    invalidEmails.add("my@");
+    LoginRequestBody loginRequestBody = new LoginRequestBody("myemail.com", "Qwerty123");
 
-    LoginRequestBody loginRequestBody = new LoginRequestBody(null, "Qwerty123");
-
-    for (String invalidEmail : invalidEmails) {
-      loginRequestBody.setEmail(invalidEmail);
-
-      this.mockMvc.perform(post(baseUrl)
-          .content(objectMapper.writeValueAsString(loginRequestBody))
-          .contentType(MediaType.APPLICATION_JSON))
-        .andDo(print())
-        .andExpect(status().isBadRequest())
-        .andExpect(content().string(objectMapper.writeValueAsString(
-          new ErrorResponseBody(Message.INVALID_EMAIL))));
-    }
+    this.mockMvc.perform(post(baseUrl)
+        .content(objectMapper.writeValueAsString(loginRequestBody))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string(objectMapper.writeValueAsString(
+        new ErrorResponseBody(Message.INVALID_EMAIL))));
   }
 
   @Test

@@ -131,24 +131,16 @@ public class RegisterIntegrationTest {
 
   @Test
   public void shouldReturnInvalidEmailError() throws Exception {
-    List<String> invalidEmails = new ArrayList<>();
-    invalidEmails.add("myemail.com");
-    invalidEmails.add("@email.com");
-    invalidEmails.add("my@");
+    RegisterRequestBody registerRequestBody = new RegisterRequestBody("myemail.com",
+      "Qwerty123");
 
-    RegisterRequestBody registerRequestBody = new RegisterRequestBody(null, "Qwerty123");
-
-    for (String invalidEmail : invalidEmails) {
-      registerRequestBody.setEmail(invalidEmail);
-
-      this.mockMvc.perform(post(baseUrl)
-          .content(objectMapper.writeValueAsString(registerRequestBody))
-          .contentType(MediaType.APPLICATION_JSON))
-        .andDo(print())
-        .andExpect(status().isBadRequest())
-        .andExpect(content().string(objectMapper.writeValueAsString(
-          new ErrorResponseBody(Message.INVALID_EMAIL))));
-    }
+    this.mockMvc.perform(post(baseUrl)
+        .content(objectMapper.writeValueAsString(registerRequestBody))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string(objectMapper.writeValueAsString(
+        new ErrorResponseBody(Message.INVALID_EMAIL))));
   }
 
   @Test

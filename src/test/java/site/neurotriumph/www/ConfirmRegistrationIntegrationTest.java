@@ -20,9 +20,6 @@ import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.ConfirmationRequestBody;
 import site.neurotriumph.www.pojo.ErrorResponseBody;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -81,40 +78,34 @@ public class ConfirmRegistrationIntegrationTest {
   }
 
   @Test
-  public void shouldReturnInvalidTokenError() throws Exception {
-    List<String> invalidTokens = new ArrayList<>();
-    /*
-     * invalid because..
-     * ..removed one character (this will cause the jwt verifier to
-     * throw an exception).
-     * */
-    invalidTokens.add("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjF9.1hF426wB0xOtHGdBwzgDo2LNs91fw5yF3tZ91aEqVy");
-    /*
-     * invalid because..
-     * ..dots removed (this will prevent the token from passing regex
-     * validation).
-     * */
-    invalidTokens.add("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9eyJ1aWQiOjF91hF426wB0xOtHGdBwzgDo2LNs91fw5yF3tZ91aEqVyg");
-    /*
-     * invalid because..
-     * ..token expired.
-     * */
-    invalidTokens.add("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjEsImV4cCI6MTY1MDM0MzUzMX0." +
-      "kJF2Nt6ga_4iW3iS-Q7o53qigoP3KBT5Gzq6Y7sW7OY");
-
+  public void shouldReturnTokenCannotBeBlankError() throws Exception {
     ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(null);
 
-    for (String invalidToken : invalidTokens) {
-      confirmationRequestBody.setToken(invalidToken);
+    this.mockMvc.perform(put(baseUrl)
+        .content(objectMapper.writeValueAsString(confirmationRequestBody))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string(objectMapper.writeValueAsString(
+        new ErrorResponseBody(Message.TOKEN_CANNOT_BE_BLANK))));
+  }
 
-      this.mockMvc.perform(put(baseUrl)
-          .content(objectMapper.writeValueAsString(confirmationRequestBody))
-          .contentType(MediaType.APPLICATION_JSON))
-        .andDo(print())
-        .andExpect(status().isBadRequest())
-        .andExpect(content().string(objectMapper.writeValueAsString(
-          new ErrorResponseBody(Message.INVALID_TOKEN))));
-    }
+  @Test
+  public void shouldReturnInvalidTokenError() throws Exception {
+    ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(
+      /*
+       * This token expired.
+       * */
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjEsImV4cCI6MTY1MDUxMDYxOX0." +
+        "CPkP7Mco5Qnlhb5It1BklWEiBq2Ocnpqzot4is41W9I");
+
+    this.mockMvc.perform(put(baseUrl)
+        .content(objectMapper.writeValueAsString(confirmationRequestBody))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string(objectMapper.writeValueAsString(
+        new ErrorResponseBody(Message.INVALID_TOKEN))));
   }
 
   @Test
