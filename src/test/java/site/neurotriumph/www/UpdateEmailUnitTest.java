@@ -20,7 +20,7 @@ import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.constant.Regex;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.entity.User;
-import site.neurotriumph.www.pojo.UpdatePasswordRequestBody;
+import site.neurotriumph.www.pojo.UpdateEmailRequestBody;
 import site.neurotriumph.www.repository.UserRepository;
 import site.neurotriumph.www.service.MailSenderService;
 import site.neurotriumph.www.service.UserService;
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class UpdatePasswordUnitTest {
+public class UpdateEmailUnitTest {
   @Value("${app.secret}")
   private String appSecret;
 
@@ -54,19 +54,19 @@ public class UpdatePasswordUnitTest {
   @Test
   public void shouldThrowIllegalStateExceptionBecauseNothingToUpdate() {
     IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-      UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
-        "Qwerty123");
+      UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("Qwerty123",
+        senderEmail);
 
       User user = Mockito.spy(new User(
         1L,
         senderEmail,
-        DigestUtils.sha256Hex(updatePasswordRequestBody.getPassword()),
+        DigestUtils.sha256Hex(updateEmailRequestBody.getPassword()),
         true));
 
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(user.getId())))
         .thenReturn(Optional.of(user));
 
-      userService.updatePassword(updatePasswordRequestBody, user.getId());
+      userService.updateEmail(updateEmailRequestBody, user.getId());
     });
 
     assertEquals(Message.NOTHING_TO_UPDATE, exception.getMessage());
@@ -75,8 +75,8 @@ public class UpdatePasswordUnitTest {
   @Test
   public void shouldThrowIllegalStateExceptionBecauseWrongPassword() {
     IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-      UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("123123",
-        "Qwerty1234");
+      UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("123123",
+        "new_email@gmail.com");
 
       User user = Mockito.spy(new User(
         1L,
@@ -87,7 +87,7 @@ public class UpdatePasswordUnitTest {
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(user.getId())))
         .thenReturn(Optional.of(user));
 
-      userService.updatePassword(updatePasswordRequestBody, user.getId());
+      userService.updateEmail(updateEmailRequestBody, user.getId());
     });
 
     assertEquals(Message.WRONG_PASSWORD, exception.getMessage());
@@ -96,13 +96,13 @@ public class UpdatePasswordUnitTest {
   @Test
   public void shouldThrowIllegalStateExceptionBecauseUserDoesNotExist() {
     IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-      UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
-        "Qwerty1234");
+      UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("Qwerty123",
+        "new_email@gmail.com");
 
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(1L)))
         .thenReturn(Optional.empty());
 
-      userService.updatePassword(updatePasswordRequestBody, 1L);
+      userService.updateEmail(updateEmailRequestBody, 1L);
     });
 
     assertEquals(Message.USER_DOES_NOT_EXIST, exception.getMessage());
@@ -110,20 +110,20 @@ public class UpdatePasswordUnitTest {
 
   @Test
   public void shouldFindUserAndSendEmail() {
-    UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
-      "Qwerty1234");
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("Qwerty123",
+      "new_email@gmail.com");
 
     User user = Mockito.spy(new User(
       1L,
       senderEmail,
-      DigestUtils.sha256Hex(updatePasswordRequestBody.getPassword()),
+      DigestUtils.sha256Hex(updateEmailRequestBody.getPassword()),
       true));
 
     Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(user.getId())))
       .thenReturn(Optional.of(user));
 
     JWTCreator.Builder builder = Mockito.spy(JWT.create());
-    MockedStatic<JWT> mockedStaticJWT = Mockito.mockStatic(JWT.class, Mockito.CALLS_REAL_METHODS);
+    MockedStatic<JWT> mockedStatic = Mockito.mockStatic(JWT.class, Mockito.CALLS_REAL_METHODS);
     Mockito.when(JWT.create())
       .thenReturn(builder);
 
@@ -132,23 +132,23 @@ public class UpdatePasswordUnitTest {
       .when(builder)
       .sign(ArgumentMatchers.any(Algorithm.class));
 
-    UpdatePasswordRequestBody spiedUpdatePasswordRequestBody = Mockito.spy(updatePasswordRequestBody);
+    UpdateEmailRequestBody spiedUpdateEmailRequestBody = Mockito.spy(updateEmailRequestBody);
 
-    userService.updatePassword(spiedUpdatePasswordRequestBody, user.getId());
+    userService.updateEmail(spiedUpdateEmailRequestBody, user.getId());
 
-    mockedStaticJWT.close();
+    mockedStatic.close();
 
     Mockito.verify(userRepository, Mockito.times(1))
       .findConfirmedById(user.getId());
 
-    Mockito.verify(user, Mockito.times(2))
+    Mockito.verify(user, Mockito.times(1))
       .getPassword_hash();
 
-    Mockito.verify(spiedUpdatePasswordRequestBody, Mockito.times(1))
+    Mockito.verify(spiedUpdateEmailRequestBody, Mockito.times(1))
       .getPassword();
 
-    Mockito.verify(spiedUpdatePasswordRequestBody, Mockito.times(1))
-      .getNew_password();
+    Mockito.verify(spiedUpdateEmailRequestBody, Mockito.times(2))
+      .getNew_email();
 
     /*
      * Checking the token for validity.
@@ -157,7 +157,7 @@ public class UpdatePasswordUnitTest {
     String token = resultCollector.getResult();
 
     assertDoesNotThrow(() -> {
-      JWT.require(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION))
+      JWT.require(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION))
         .build()
         .verify(token);
     });
@@ -166,12 +166,12 @@ public class UpdatePasswordUnitTest {
       DecodedJWT decodedJWT = JWT.decode(token);
 
       assertNotNull(decodedJWT.getClaim(Field.USER_ID));
-      assertNotNull(decodedJWT.getClaim(Field.NEW_PASSWORD_HASH));
+      assertNotNull(decodedJWT.getClaim(Field.NEW_EMAIL));
       assertNotNull(decodedJWT.getClaim(Field.EXPIRATION_TIME));
 
       assertEquals(user.getId(), decodedJWT.getClaim(Field.USER_ID).asLong());
-      assertEquals(DigestUtils.sha256Hex(updatePasswordRequestBody.getNew_password()),
-        decodedJWT.getClaim(Field.NEW_PASSWORD_HASH).asString());
+      assertEquals(updateEmailRequestBody.getNew_email(),
+        decodedJWT.getClaim(Field.NEW_EMAIL).asString());
       assertTrue(decodedJWT.getClaim(Field.EXPIRATION_TIME).asLong() > 0);
     });
 

@@ -16,6 +16,5 @@ public interface Message {
   String USER_NOT_CONFIRMED = "user not confirmed";
   String WRONG_PASSWORD = "wrong password";
   String AUTH_TOKEN_EXPIRED = "authentication token expired";
-  String DATA_IS_NOT_CHANGED = "data is not changed";
   String NOTHING_TO_UPDATE = "nothing to update";
 }

@@ -24,7 +24,7 @@ import site.neurotriumph.www.constant.Header;
 import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.ErrorResponseBody;
-import site.neurotriumph.www.pojo.UpdatePasswordRequestBody;
+import site.neurotriumph.www.pojo.UpdateEmailRequestBody;
 
 import javax.mail.internet.MimeMessage;
 import java.util.ArrayList;
@@ -44,8 +44,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource("/test.properties")
-public class UpdatePasswordIntegrationTest {
-  private final String baseUrl = "/user/password";
+public class UpdateEmailIntegrationTest {
+  private final String baseUrl = "/user/email";
 
   @Value("${app.secret}")
   private String appSecret;
@@ -75,8 +75,8 @@ public class UpdatePasswordIntegrationTest {
 
   @Test
   public void shouldReturnTokenExpiredError() throws Exception {
-    UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
-      "Qwerty1234");
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("Qwerty123",
+      "new_email@gmail.com");
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
@@ -85,7 +85,7 @@ public class UpdatePasswordIntegrationTest {
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updatePasswordRequestBody))
+        .content(objectMapper.writeValueAsString(updateEmailRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -95,12 +95,12 @@ public class UpdatePasswordIntegrationTest {
 
   @Test
   public void shouldReturnInvalidTokenError() throws Exception {
-    UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
-      "Qwerty1234");
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("Qwerty123",
+      "new_email@gmail.com");
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, "")
-        .content(objectMapper.writeValueAsString(updatePasswordRequestBody))
+        .content(objectMapper.writeValueAsString(updateEmailRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -110,11 +110,11 @@ public class UpdatePasswordIntegrationTest {
 
   @Test
   public void shouldReturnAuthTokenNotSpecifiedError() throws Exception {
-    UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
-      "Qwerty1234");
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("Qwerty123",
+      "new_email@gmail.com");
 
     this.mockMvc.perform(put(baseUrl)
-        .content(objectMapper.writeValueAsString(updatePasswordRequestBody))
+        .content(objectMapper.writeValueAsString(updateEmailRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -126,17 +126,16 @@ public class UpdatePasswordIntegrationTest {
   @Sql(value = {"/sql/insert_confirmed_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnNothingToUpdateError() throws Exception {
-    UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
-      "Qwerty123");
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("Qwerty123",
+      senderEmail);
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
-      .withExpiresAt(new Date(System.currentTimeMillis() + Const.AUTH_TOKEN_LIFETIME))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updatePasswordRequestBody))
+        .content(objectMapper.writeValueAsString(updateEmailRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -148,17 +147,16 @@ public class UpdatePasswordIntegrationTest {
   @Sql(value = {"/sql/insert_confirmed_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnWrongPasswordError() throws Exception {
-    UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("123123",
-      "Qwerty1234");
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("123123",
+      "new_email@gmail.com");
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
-      .withExpiresAt(new Date(System.currentTimeMillis() + Const.AUTH_TOKEN_LIFETIME))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updatePasswordRequestBody))
+        .content(objectMapper.writeValueAsString(updateEmailRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -170,14 +168,13 @@ public class UpdatePasswordIntegrationTest {
   @Sql(value = {"/sql/insert_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnUserDoesNotExistError() throws Exception {
-    UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
-      "Qwerty1234");
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("Qwerty123",
+      "new_email@gmail.com");
 
     List<String> tokens = new ArrayList<>();
 
     tokens.add(JWT.create()
       .withClaim(Field.USER_ID, 2L)
-      .withExpiresAt(new Date(System.currentTimeMillis() + Const.AUTH_TOKEN_LIFETIME))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION)));
 
     /*
@@ -192,7 +189,7 @@ public class UpdatePasswordIntegrationTest {
     for (String token : tokens) {
       this.mockMvc.perform(put(baseUrl)
           .header(Header.AUTHENTICATION_TOKEN, token)
-          .content(objectMapper.writeValueAsString(updatePasswordRequestBody))
+          .content(objectMapper.writeValueAsString(updateEmailRequestBody))
           .contentType(MediaType.APPLICATION_JSON))
         .andDo(print())
         .andExpect(status().isBadRequest())
@@ -202,37 +199,63 @@ public class UpdatePasswordIntegrationTest {
   }
 
   @Test
-  public void shouldReturnPasswordCannotBeBlankError() throws Exception {
-    /*
-     * Validation for the password field.
-     * */
+  public void shouldReturnEmailCannotBeBlankError() throws Exception {
+    List<String> invalidEmails = new ArrayList<>();
+    invalidEmails.add("");
+    invalidEmails.add(null);
 
-    UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody(null,
-      "Qwerty1234");
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("Qwerty123",
+      null);
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
-      .withExpiresAt(new Date(System.currentTimeMillis() + Const.AUTH_TOKEN_LIFETIME))
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
+
+    for (String invalidEmail : invalidEmails) {
+      updateEmailRequestBody.setNew_email(invalidEmail);
+
+      this.mockMvc.perform(put(baseUrl)
+          .header(Header.AUTHENTICATION_TOKEN, token)
+          .content(objectMapper.writeValueAsString(updateEmailRequestBody))
+          .contentType(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(objectMapper.writeValueAsString(
+          new ErrorResponseBody(Message.EMAIL_CANNOT_BE_BLANK))));
+    }
+  }
+
+  @Test
+  public void shouldReturnInvalidEmailError() throws Exception {
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("Qwerty123",
+      "abc");
+
+    String token = JWT.create()
+      .withClaim(Field.USER_ID, 1L)
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updatePasswordRequestBody))
+        .content(objectMapper.writeValueAsString(updateEmailRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
       .andExpect(content().string(objectMapper.writeValueAsString(
-        new ErrorResponseBody(Message.PASSWORD_CANNOT_BE_BLANK))));
+        new ErrorResponseBody(Message.INVALID_EMAIL))));
+  }
 
-    /*
-     * Validation for the new_password field.
-     * */
+  @Test
+  public void shouldReturnPasswordCannotBeBlankError() throws Exception {
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody(null,
+      "new_email@gmail.com");
 
-    updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123", null);
+    String token = JWT.create()
+      .withClaim(Field.USER_ID, 1L)
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updatePasswordRequestBody))
+        .content(objectMapper.writeValueAsString(updateEmailRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -242,37 +265,17 @@ public class UpdatePasswordIntegrationTest {
 
   @Test
   public void shouldReturnPasswordTooShortError() throws Exception {
-    /*
-     * Validation for the password field.
-     * */
-
-    UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
-      "a".repeat(Const.MIN_PASSWORD_LENGTH - 1));
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody(
+      "a".repeat(Const.MIN_PASSWORD_LENGTH - 1),
+      "new_email@gmail.com");
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
-      .withExpiresAt(new Date(System.currentTimeMillis() + Const.AUTH_TOKEN_LIFETIME))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updatePasswordRequestBody))
-        .contentType(MediaType.APPLICATION_JSON))
-      .andDo(print())
-      .andExpect(status().isBadRequest())
-      .andExpect(content().string(objectMapper.writeValueAsString(
-        new ErrorResponseBody(Message.PASSWORD_IS_TOO_SHORT))));
-
-    /*
-     * Validation for the new_password field.
-     * */
-
-    updatePasswordRequestBody = new UpdatePasswordRequestBody("a".repeat(Const.MIN_PASSWORD_LENGTH - 1),
-      "Qwerty1234");
-
-    this.mockMvc.perform(put(baseUrl)
-        .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updatePasswordRequestBody))
+        .content(objectMapper.writeValueAsString(updateEmailRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -286,8 +289,8 @@ public class UpdatePasswordIntegrationTest {
   public void shouldReturnOkStatusAndSendEmail() throws Exception {
     startGreenMail();
 
-    UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
-      "Qwerty1234");
+    UpdateEmailRequestBody updateEmailRequestBody = new UpdateEmailRequestBody("Qwerty123",
+      "new_email@gmail.com");
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
@@ -295,7 +298,7 @@ public class UpdatePasswordIntegrationTest {
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updatePasswordRequestBody))
+        .content(objectMapper.writeValueAsString(updateEmailRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isOk());

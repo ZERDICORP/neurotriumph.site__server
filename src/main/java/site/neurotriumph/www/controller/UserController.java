@@ -13,6 +13,7 @@ import site.neurotriumph.www.constant.Field;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.ConfirmationRequestBody;
 import site.neurotriumph.www.pojo.GetUserResponseBody;
+import site.neurotriumph.www.pojo.UpdateEmailRequestBody;
 import site.neurotriumph.www.pojo.UpdatePasswordRequestBody;
 import site.neurotriumph.www.service.UserService;
 
@@ -23,6 +24,15 @@ import javax.validation.Valid;
 public class UserController {
   @Autowired
   private UserService userService;
+
+  @PutMapping("/user/email")
+  @WithAuthToken
+  public void updateEmail(@Valid @RequestBody UpdateEmailRequestBody updateEmailRequestBody,
+                          DecodedJWT decodedJWT) {
+    userService.updateEmail(updateEmailRequestBody,
+      decodedJWT.getClaim(Field.USER_ID).asLong());
+  }
+
 
   @PutMapping("/user/password/confirm")
   @WithAuthToken

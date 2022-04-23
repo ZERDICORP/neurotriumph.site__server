@@ -12,6 +12,7 @@ import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.entity.User;
 import site.neurotriumph.www.pojo.GetUserResponseBody;
+import site.neurotriumph.www.pojo.UpdateEmailRequestBody;
 import site.neurotriumph.www.pojo.UpdatePasswordRequestBody;
 import site.neurotriumph.www.repository.UserRepository;
 
@@ -28,6 +29,28 @@ public class UserService {
 
   @Autowired
   private MailSenderService mailSenderService;
+
+  public void updateEmail(UpdateEmailRequestBody updateEmailRequestBody, Long id) {
+    User user = userRepository.findConfirmedById(id)
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    if (!user.getPassword_hash()
+      .equals(DigestUtils.sha256Hex(updateEmailRequestBody.getPassword()))) {
+      throw new IllegalStateException(Message.WRONG_PASSWORD);
+    }
+
+    if (user.getEmail().equals(updateEmailRequestBody.getNew_email())) {
+      throw new IllegalStateException(Message.NOTHING_TO_UPDATE);
+    }
+
+    String token = JWT.create()
+      .withClaim(Field.USER_ID, user.getId())
+      .withClaim(Field.NEW_EMAIL, updateEmailRequestBody.getNew_email())
+      .withExpiresAt(new Date(System.currentTimeMillis() + Const.CONFIRMATION_TOKEN_LIFETIME))
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION));
+
+    mailSenderService.send(user.getEmail(), "Neuro Triumph", token);
+  }
 
   @Transactional
   public void confirmPasswordUpdate(Long id, String newPasswordHash) {
@@ -53,7 +76,7 @@ public class UserService {
     String newPasswordHash = DigestUtils.sha256Hex(updatePasswordRequestBody.getNew_password());
 
     if (user.getPassword_hash().equals(newPasswordHash)) {
-      throw new IllegalStateException(Message.DATA_IS_NOT_CHANGED);
+      throw new IllegalStateException(Message.NOTHING_TO_UPDATE);
     }
 
     String token = JWT.create()
