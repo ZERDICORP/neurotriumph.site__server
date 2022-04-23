@@ -3,7 +3,7 @@ package site.neurotriumph.www.constant;
 public interface Message {
   String USER_ALREADY_EXISTS = "user already exists";
   String USER_DOES_NOT_EXIST = "user does not exist";
-  String TOKEN_NOT_SPECIFIED = "token not specified";
+  String AUTH_TOKEN_NOT_SPECIFIED = "authentication token not specified";
   String INVALID_TOKEN = "invalid token";
   String INVALID_EMAIL = "invalid email";
   String TOKEN_CANNOT_BE_BLANK = "token cannot be blank";
@@ -15,6 +15,7 @@ public interface Message {
   String USER_ALREADY_CONFIRMED = "user already confirmed";
   String USER_NOT_CONFIRMED = "user not confirmed";
   String WRONG_PASSWORD = "wrong password";
-  String TOKEN_EXPIRED = "token expired";
+  String AUTH_TOKEN_EXPIRED = "authentication token expired";
   String DATA_IS_NOT_CHANGED = "data is not changed";
+  String NOTHING_TO_UPDATE = "nothing to update";
 }

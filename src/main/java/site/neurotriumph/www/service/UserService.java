@@ -15,6 +15,7 @@ import site.neurotriumph.www.pojo.GetUserResponseBody;
 import site.neurotriumph.www.pojo.UpdatePasswordRequestBody;
 import site.neurotriumph.www.repository.UserRepository;
 
+import javax.transaction.Transactional;
 import java.util.Date;
 
 @Service
@@ -28,6 +29,18 @@ public class UserService {
   @Autowired
   private MailSenderService mailSenderService;
 
+  @Transactional
+  public void confirmPasswordUpdate(Long id, String newPasswordHash) {
+    User user = userRepository.findConfirmedById(id)
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    if (user.getPassword_hash().equals(newPasswordHash)) {
+      throw new IllegalStateException(Message.NOTHING_TO_UPDATE);
+    }
+
+    user.setPassword_hash(newPasswordHash);
+  }
+
   public void updatePassword(UpdatePasswordRequestBody updatePasswordRequestBody, Long id) {
     User user = userRepository.findConfirmedById(id)
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
@@ -37,14 +50,15 @@ public class UserService {
       throw new IllegalStateException(Message.WRONG_PASSWORD);
     }
 
-    if (user.getPassword_hash()
-      .equals(DigestUtils.sha256Hex(updatePasswordRequestBody.getNew_password()))) {
+    String newPasswordHash = DigestUtils.sha256Hex(updatePasswordRequestBody.getNew_password());
+
+    if (user.getPassword_hash().equals(newPasswordHash)) {
       throw new IllegalStateException(Message.DATA_IS_NOT_CHANGED);
     }
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, user.getId())
-      .withClaim(Field.NEW_PASSWORD, updatePasswordRequestBody.getNew_password())
+      .withClaim(Field.NEW_PASSWORD_HASH, newPasswordHash)
       .withExpiresAt(new Date(System.currentTimeMillis() + Const.CONFIRMATION_TOKEN_LIFETIME))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION));
 

@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -22,7 +21,6 @@ import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.ErrorResponseBody;
 import site.neurotriumph.www.pojo.GetUserResponseBody;
-import site.neurotriumph.www.pojo.UpdatePasswordRequestBody;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,6 +53,42 @@ public class GetUserIntegrationTest {
   private ObjectMapper objectMapper;
 
   @Test
+  public void shouldReturnTokenExpiredError() throws Exception {
+    String token = JWT.create()
+      .withClaim(Field.USER_ID, 1L)
+      .withExpiresAt(new Date(System.currentTimeMillis() - 1000))
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
+
+    this.mockMvc.perform(get(baseUrl)
+        .header(Header.AUTHENTICATION_TOKEN, token))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string(objectMapper.writeValueAsString(
+        new ErrorResponseBody(Message.AUTH_TOKEN_EXPIRED))));
+  }
+
+  @Test
+  public void shouldReturnInvalidTokenError() throws Exception {
+    String token = "";
+
+    this.mockMvc.perform(get(baseUrl)
+        .header(Header.AUTHENTICATION_TOKEN, token))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string(objectMapper.writeValueAsString(
+        new ErrorResponseBody(Message.INVALID_TOKEN))));
+  }
+
+  @Test
+  public void shouldReturnAuthTokenNotSpecifiedError() throws Exception {
+    this.mockMvc.perform(get(baseUrl))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string(objectMapper.writeValueAsString(
+        new ErrorResponseBody(Message.AUTH_TOKEN_NOT_SPECIFIED))));
+  }
+
+  @Test
   @Sql(value = {"/sql/insert_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnUserDoesNotExistError() throws Exception {
@@ -82,42 +116,6 @@ public class GetUserIntegrationTest {
         .andExpect(content().string(objectMapper.writeValueAsString(
           new ErrorResponseBody(Message.USER_DOES_NOT_EXIST))));
     }
-  }
-
-  @Test
-  public void shouldReturnTokenExpiredError() throws Exception {
-    String token = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
-      .withExpiresAt(new Date(System.currentTimeMillis() - 1000))
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
-
-    this.mockMvc.perform(get(baseUrl)
-        .header(Header.AUTHENTICATION_TOKEN, token))
-      .andDo(print())
-      .andExpect(status().isBadRequest())
-      .andExpect(content().string(objectMapper.writeValueAsString(
-        new ErrorResponseBody(Message.TOKEN_EXPIRED))));
-  }
-
-  @Test
-  public void shouldReturnInvalidTokenError() throws Exception {
-    String token = "";
-
-    this.mockMvc.perform(get(baseUrl)
-        .header(Header.AUTHENTICATION_TOKEN, token))
-      .andDo(print())
-      .andExpect(status().isBadRequest())
-      .andExpect(content().string(objectMapper.writeValueAsString(
-        new ErrorResponseBody(Message.INVALID_TOKEN))));
-  }
-
-  @Test
-  public void shouldReturnTokenNotSpecifiedError() throws Exception {
-    this.mockMvc.perform(get(baseUrl))
-      .andDo(print())
-      .andExpect(status().isBadRequest())
-      .andExpect(content().string(objectMapper.writeValueAsString(
-        new ErrorResponseBody(Message.TOKEN_NOT_SPECIFIED))));
   }
 
   @Test

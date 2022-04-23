@@ -8,7 +8,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import site.neurotriumph.www.annotation.WithAuthToken;
+import site.neurotriumph.www.annotation.WithConfirmationToken;
 import site.neurotriumph.www.constant.Field;
+import site.neurotriumph.www.constant.TokenMarker;
+import site.neurotriumph.www.pojo.ConfirmationRequestBody;
 import site.neurotriumph.www.pojo.GetUserResponseBody;
 import site.neurotriumph.www.pojo.UpdatePasswordRequestBody;
 import site.neurotriumph.www.service.UserService;
@@ -20,6 +23,15 @@ import javax.validation.Valid;
 public class UserController {
   @Autowired
   private UserService userService;
+
+  @PutMapping("/user/password/confirm")
+  @WithAuthToken
+  @WithConfirmationToken(TokenMarker.PASSWORD_UPDATE_CONFIRMATION)
+  public void confirmPasswordUpdate(@Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
+                             DecodedJWT decodedJWT) {
+    userService.confirmPasswordUpdate(decodedJWT.getClaim(Field.USER_ID).asLong(),
+      decodedJWT.getClaim(Field.NEW_PASSWORD_HASH).asString());
+  }
 
   @PutMapping("/user/password")
   @WithAuthToken

@@ -44,14 +44,14 @@ public class WithAuthTokenAspect {
       .getHeader(Header.AUTHENTICATION_TOKEN);
 
     if (token == null)
-      throw new IllegalStateException(Message.TOKEN_NOT_SPECIFIED);
+      throw new IllegalStateException(Message.AUTH_TOKEN_NOT_SPECIFIED);
 
     try {
       JWT.require(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION))
         .build()
         .verify(token);
     } catch (TokenExpiredException e) {
-      throw new IllegalStateException(Message.TOKEN_EXPIRED);
+      throw new IllegalStateException(Message.AUTH_TOKEN_EXPIRED);
     } catch (JWTVerificationException e) {
       throw new IllegalStateException(Message.INVALID_TOKEN);
     }

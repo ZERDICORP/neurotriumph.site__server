@@ -147,7 +147,7 @@ public class UpdatePasswordUnitTest {
     Mockito.verify(spiedUpdatePasswordRequestBody, Mockito.times(1))
       .getPassword();
 
-    Mockito.verify(spiedUpdatePasswordRequestBody, Mockito.times(2))
+    Mockito.verify(spiedUpdatePasswordRequestBody, Mockito.times(1))
       .getNew_password();
 
     /*
@@ -166,12 +166,12 @@ public class UpdatePasswordUnitTest {
       DecodedJWT decodedJWT = JWT.decode(token);
 
       assertNotNull(decodedJWT.getClaim(Field.USER_ID));
-      assertNotNull(decodedJWT.getClaim(Field.NEW_PASSWORD));
+      assertNotNull(decodedJWT.getClaim(Field.NEW_PASSWORD_HASH));
       assertNotNull(decodedJWT.getClaim(Field.EXPIRATION_TIME));
 
       assertEquals(user.getId(), decodedJWT.getClaim(Field.USER_ID).asLong());
-      assertEquals(updatePasswordRequestBody.getNew_password(),
-        decodedJWT.getClaim(Field.NEW_PASSWORD).asString());
+      assertEquals(DigestUtils.sha256Hex(updatePasswordRequestBody.getNew_password()),
+        decodedJWT.getClaim(Field.NEW_PASSWORD_HASH).asString());
       assertTrue(decodedJWT.getClaim(Field.EXPIRATION_TIME).asLong() > 0);
     });
 

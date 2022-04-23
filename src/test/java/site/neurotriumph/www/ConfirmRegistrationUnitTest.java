@@ -1,7 +1,5 @@
 package site.neurotriumph.www;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
@@ -29,13 +27,6 @@ public class ConfirmRegistrationUnitTest {
   @MockBean
   private UserRepository userRepository;
 
-  private final DecodedJWT decodedJWT = JWT.decode(
-    /*
-     * Token Payload:
-     * { "uid": 1 }
-     * */
-    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjF9.1hF426wB0xOtHGdBwzgDo2LNs91fw5yF3tZ91aEqVyg");
-
   @Test
   public void shouldThrowIllegalStateExceptionBecauseUserAlreadyConfirmed() {
     IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
@@ -46,7 +37,7 @@ public class ConfirmRegistrationUnitTest {
         .when(userRepository)
         .findById(ArgumentMatchers.eq(1L));
 
-      authService.confirmRegistration(decodedJWT);
+      authService.confirmRegistration(1L);
 
       Mockito.verify(user, Mockito.times(1))
         .isConfirmed();
@@ -62,7 +53,7 @@ public class ConfirmRegistrationUnitTest {
         .when(userRepository)
         .findById(ArgumentMatchers.eq(1L));
 
-      authService.confirmRegistration(decodedJWT);
+      authService.confirmRegistration(1L);
     });
 
     assertEquals(Message.USER_DOES_NOT_EXIST, exception.getMessage());
@@ -76,7 +67,7 @@ public class ConfirmRegistrationUnitTest {
       .when(userRepository)
       .findById(ArgumentMatchers.eq(1L));
 
-    authService.confirmRegistration(decodedJWT);
+    authService.confirmRegistration(1L);
 
     Mockito.verify(user, Mockito.times(1))
       .setConfirmed(ArgumentMatchers.eq(true));

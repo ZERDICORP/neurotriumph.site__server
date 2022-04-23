@@ -53,8 +53,8 @@ public class AuthService {
   }
 
   @Transactional
-  public void confirmRegistration(DecodedJWT decodedJWT) {
-    User user = userRepository.findById(decodedJWT.getClaim(Field.USER_ID).asLong())
+  public void confirmRegistration(Long id) {
+    User user = userRepository.findById(id)
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
 
     if (user.isConfirmed()) {

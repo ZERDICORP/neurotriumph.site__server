@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestPropertySource("/test.properties")
 public class UpdatePasswordIntegrationTest {
-   private final String baseUrl = "/user/password";
+  private final String baseUrl = "/user/password";
 
   @Value("${app.secret}")
   private String appSecret;
@@ -90,7 +90,7 @@ public class UpdatePasswordIntegrationTest {
       .andDo(print())
       .andExpect(status().isBadRequest())
       .andExpect(content().string(objectMapper.writeValueAsString(
-        new ErrorResponseBody(Message.TOKEN_EXPIRED))));
+        new ErrorResponseBody(Message.AUTH_TOKEN_EXPIRED))));
   }
 
   @Test
@@ -109,7 +109,7 @@ public class UpdatePasswordIntegrationTest {
   }
 
   @Test
-  public void shouldReturnTokenNotSpecifiedError() throws Exception {
+  public void shouldReturnAuthTokenNotSpecifiedError() throws Exception {
     UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
       "Qwerty1234");
 
@@ -119,7 +119,7 @@ public class UpdatePasswordIntegrationTest {
       .andDo(print())
       .andExpect(status().isBadRequest())
       .andExpect(content().string(objectMapper.writeValueAsString(
-        new ErrorResponseBody(Message.TOKEN_NOT_SPECIFIED))));
+        new ErrorResponseBody(Message.AUTH_TOKEN_NOT_SPECIFIED))));
   }
 
   @Test
@@ -243,8 +243,8 @@ public class UpdatePasswordIntegrationTest {
   @Test
   public void shouldReturnPasswordTooShortError() throws Exception {
     /*
-    * Validation for the password field.
-    * */
+     * Validation for the password field.
+     * */
 
     UpdatePasswordRequestBody updatePasswordRequestBody = new UpdatePasswordRequestBody("Qwerty123",
       "a".repeat(Const.MIN_PASSWORD_LENGTH - 1));
@@ -291,7 +291,6 @@ public class UpdatePasswordIntegrationTest {
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
-      .withExpiresAt(new Date(System.currentTimeMillis() + Const.AUTH_TOKEN_LIFETIME))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
 
     this.mockMvc.perform(put(baseUrl)

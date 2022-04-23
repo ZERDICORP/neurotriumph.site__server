@@ -20,6 +20,8 @@ import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.ConfirmationRequestBody;
 import site.neurotriumph.www.pojo.ErrorResponseBody;
 
+import java.util.Date;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -92,12 +94,12 @@ public class ConfirmRegistrationIntegrationTest {
 
   @Test
   public void shouldReturnInvalidTokenError() throws Exception {
-    ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(
-      /*
-       * This token expired.
-       * */
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjEsImV4cCI6MTY1MDUxMDYxOX0." +
-        "CPkP7Mco5Qnlhb5It1BklWEiBq2Ocnpqzot4is41W9I");
+    String token = JWT.create()
+      .withClaim(Field.USER_ID, 1L)
+      .withExpiresAt(new Date(System.currentTimeMillis() - 1000))
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.REGISTRATION_CONFIRMATION));
+
+    ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
 
     this.mockMvc.perform(put(baseUrl)
         .content(objectMapper.writeValueAsString(confirmationRequestBody))
