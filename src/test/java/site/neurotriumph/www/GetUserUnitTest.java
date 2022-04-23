@@ -37,13 +37,6 @@ public class GetUserUnitTest {
   @MockBean
   private UserRepository userRepository;
 
-  private final DecodedJWT decodedJWT = JWT.decode(
-    /*
-     * Token Payload:
-     * { "uid": 1 }
-     * */
-    "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjF9.aVbN7ZpGSe_7q4bvCxPX0Ahur6Uas0mb3ZDgnGmUpU0");
-
   @Test
   public void shouldThrowIllegalStateExceptionBecauseUserDoesNotExist() {
     IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
@@ -51,7 +44,7 @@ public class GetUserUnitTest {
         .when(userRepository)
         .findConfirmedById(ArgumentMatchers.eq(1L));
 
-      userService.getUser(decodedJWT);
+      userService.getUser(1L);
     });
 
     assertEquals(Message.USER_DOES_NOT_EXIST, exception.getMessage());
@@ -66,7 +59,7 @@ public class GetUserUnitTest {
       .when(userRepository)
       .findConfirmedById(ArgumentMatchers.eq(1L));
 
-    GetUserResponseBody getUserResponseBody = userService.getUser(decodedJWT);
+    GetUserResponseBody getUserResponseBody = userService.getUser(1L);
 
     assertEquals(senderEmail, getUserResponseBody.getEmail());
 

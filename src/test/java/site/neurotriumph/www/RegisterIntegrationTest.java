@@ -57,9 +57,6 @@ public class RegisterIntegrationTest {
   private GreenMail greenMail;
 
   private void startGreenMail() {
-    if (greenMail != null)
-      greenMail.stop();
-
     greenMail = new GreenMail(ServerSetupTest.SMTP)
       .withConfiguration(GreenMailConfiguration.aConfig()
         .withUser(senderEmail, senderPassword));
@@ -146,7 +143,7 @@ public class RegisterIntegrationTest {
   @Test
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-  public void shouldReturnOkStatus() throws Exception {
+  public void shouldReturnOkStatusAndSendEmail() throws Exception {
     startGreenMail();
 
     RegisterRequestBody registerRequestBody = new RegisterRequestBody(senderEmail, "Qwerty123");
@@ -168,6 +165,8 @@ public class RegisterIntegrationTest {
         receivedMessage.getAllRecipients()[0].toString());
 
       assertTrue(receivedMessage.getContent().toString().length() > 0);
+
+      greenMail.stop();
     });
   }
 }

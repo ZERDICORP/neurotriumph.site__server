@@ -35,12 +35,14 @@ public class AuthService {
     User user = userRepository.findByEmail(loginRequestBody.getEmail())
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
 
-    if (!user.isConfirmed())
+    if (!user.isConfirmed()) {
       throw new IllegalStateException(Message.USER_NOT_CONFIRMED);
+    }
 
     if (!user.getPassword_hash()
-      .equals(DigestUtils.sha256Hex(loginRequestBody.getPassword())))
+      .equals(DigestUtils.sha256Hex(loginRequestBody.getPassword()))) {
       throw new IllegalStateException(Message.WRONG_PASSWORD);
+    }
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, user.getId())
@@ -55,8 +57,9 @@ public class AuthService {
     User user = userRepository.findById(decodedJWT.getClaim(Field.USER_ID).asLong())
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
 
-    if (user.isConfirmed())
+    if (user.isConfirmed()) {
       throw new IllegalStateException(Message.USER_ALREADY_CONFIRMED);
+    }
 
     user.setConfirmed(true);
   }

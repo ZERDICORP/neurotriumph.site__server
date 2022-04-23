@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -21,11 +22,15 @@ import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.ErrorResponseBody;
 import site.neurotriumph.www.pojo.GetUserResponseBody;
+import site.neurotriumph.www.pojo.UpdatePasswordRequestBody;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,27 +55,41 @@ public class GetUserIntegrationTest {
   private ObjectMapper objectMapper;
 
   @Test
+  @Sql(value = {"/sql/insert_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+  @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnUserDoesNotExistError() throws Exception {
-    String token = JWT.create()
+    List<String> tokens = new ArrayList<>();
+
+    tokens.add(JWT.create()
       .withClaim(Field.USER_ID, 2L)
       .withExpiresAt(new Date(System.currentTimeMillis() + Const.AUTH_TOKEN_LIFETIME))
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION)));
 
-    this.mockMvc.perform(get(baseUrl)
-        .header(Header.AUTHENTICATION_TOKEN, token))
-      .andDo(print())
-      .andExpect(status().isBadRequest())
-      .andExpect(content().string(objectMapper.writeValueAsString(
-        new ErrorResponseBody(Message.USER_DOES_NOT_EXIST))));
+    /*
+     * This token has id 1, and the user with id 1 exists,
+     * but does not confirm, so it will also return an error.
+     * */
+    tokens.add(JWT.create()
+      .withClaim(Field.USER_ID, 1L)
+      .withExpiresAt(new Date(System.currentTimeMillis() + Const.AUTH_TOKEN_LIFETIME))
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION)));
+
+    for (String token : tokens) {
+      this.mockMvc.perform(get(baseUrl)
+          .header(Header.AUTHENTICATION_TOKEN, token))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(objectMapper.writeValueAsString(
+          new ErrorResponseBody(Message.USER_DOES_NOT_EXIST))));
+    }
   }
 
   @Test
   public void shouldReturnTokenExpiredError() throws Exception {
-    /*
-     * This token expired.
-     * */
-    String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjEsImV4cCI6MTY1MDUxMDczNn0." +
-        "GHILlgQ4QrQ-on9P1kwfZtzx6cpj-TOf8RiFqukWIeo";
+    String token = JWT.create()
+      .withClaim(Field.USER_ID, 1L)
+      .withExpiresAt(new Date(System.currentTimeMillis() - 1000))
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
 
     this.mockMvc.perform(get(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token))
