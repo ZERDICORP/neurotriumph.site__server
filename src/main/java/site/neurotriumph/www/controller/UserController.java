@@ -25,6 +25,15 @@ public class UserController {
   @Autowired
   private UserService userService;
 
+  @PutMapping("/user/email/confirm")
+  @WithAuthToken
+  @WithConfirmationToken(TokenMarker.EMAIL_UPDATE_CONFIRMATION)
+  public void confirmEmailUpdate(@Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
+                                 DecodedJWT decodedJWT) {
+    userService.confirmEmailUpdate(decodedJWT.getClaim(Field.USER_ID).asLong(),
+      decodedJWT.getClaim(Field.NEW_EMAIL).asString());
+  }
+
   @PutMapping("/user/email")
   @WithAuthToken
   public void updateEmail(@Valid @RequestBody UpdateEmailRequestBody updateEmailRequestBody,
@@ -38,7 +47,7 @@ public class UserController {
   @WithAuthToken
   @WithConfirmationToken(TokenMarker.PASSWORD_UPDATE_CONFIRMATION)
   public void confirmPasswordUpdate(@Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
-                             DecodedJWT decodedJWT) {
+                                    DecodedJWT decodedJWT) {
     userService.confirmPasswordUpdate(decodedJWT.getClaim(Field.USER_ID).asLong(),
       decodedJWT.getClaim(Field.NEW_PASSWORD_HASH).asString());
   }

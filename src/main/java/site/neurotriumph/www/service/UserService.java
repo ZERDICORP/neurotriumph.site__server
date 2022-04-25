@@ -30,6 +30,18 @@ public class UserService {
   @Autowired
   private MailSenderService mailSenderService;
 
+  @Transactional
+  public void confirmEmailUpdate(Long id, String newEmail) {
+    User user = userRepository.findConfirmedById(id)
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    if (user.getEmail().equals(newEmail)) {
+      throw new IllegalStateException(Message.NOTHING_TO_UPDATE);
+    }
+
+    user.setEmail(newEmail);
+  }
+
   public void updateEmail(UpdateEmailRequestBody updateEmailRequestBody, Long id) {
     User user = userRepository.findConfirmedById(id)
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
