@@ -3,6 +3,7 @@ package site.neurotriumph.www.controller;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,6 +13,7 @@ import site.neurotriumph.www.annotation.WithConfirmationToken;
 import site.neurotriumph.www.constant.Field;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.ConfirmationRequestBody;
+import site.neurotriumph.www.pojo.DeleteUserRequestBody;
 import site.neurotriumph.www.pojo.GetUserResponseBody;
 import site.neurotriumph.www.pojo.UpdateEmailRequestBody;
 import site.neurotriumph.www.pojo.UpdatePasswordRequestBody;
@@ -22,10 +24,20 @@ import javax.validation.Valid;
 @RestController
 @Validated
 public class UserController {
+  private final String baseUrl = "/user";
+
   @Autowired
   private UserService userService;
 
-  @PutMapping("/user/email/confirm")
+  @DeleteMapping(baseUrl)
+  @WithAuthToken
+  public void deleteUser(@Valid @RequestBody DeleteUserRequestBody deleteUserRequestBody,
+                          DecodedJWT decodedJWT) {
+    userService.deleteUser(deleteUserRequestBody,
+      decodedJWT.getClaim(Field.USER_ID).asLong());
+  }
+
+  @PutMapping(baseUrl + "/email/confirm")
   @WithAuthToken
   @WithConfirmationToken(TokenMarker.EMAIL_UPDATE_CONFIRMATION)
   public void confirmEmailUpdate(@Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
@@ -34,7 +46,7 @@ public class UserController {
       decodedJWT.getClaim(Field.NEW_EMAIL).asString());
   }
 
-  @PutMapping("/user/email")
+  @PutMapping(baseUrl + "/email")
   @WithAuthToken
   public void updateEmail(@Valid @RequestBody UpdateEmailRequestBody updateEmailRequestBody,
                           DecodedJWT decodedJWT) {
@@ -42,8 +54,7 @@ public class UserController {
       decodedJWT.getClaim(Field.USER_ID).asLong());
   }
 
-
-  @PutMapping("/user/password/confirm")
+  @PutMapping(baseUrl + "/password/confirm")
   @WithAuthToken
   @WithConfirmationToken(TokenMarker.PASSWORD_UPDATE_CONFIRMATION)
   public void confirmPasswordUpdate(@Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
@@ -52,7 +63,7 @@ public class UserController {
       decodedJWT.getClaim(Field.NEW_PASSWORD_HASH).asString());
   }
 
-  @PutMapping("/user/password")
+  @PutMapping(baseUrl + "/password")
   @WithAuthToken
   public void updatePassword(@Valid @RequestBody UpdatePasswordRequestBody updatePasswordRequestBody,
                              DecodedJWT decodedJWT) {
@@ -60,7 +71,7 @@ public class UserController {
       decodedJWT.getClaim(Field.USER_ID).asLong());
   }
 
-  @GetMapping("/user")
+  @GetMapping(baseUrl)
   @WithAuthToken
   public GetUserResponseBody getUser(DecodedJWT decodedJWT) {
     return userService.getUser(decodedJWT.getClaim(Field.USER_ID).asLong());

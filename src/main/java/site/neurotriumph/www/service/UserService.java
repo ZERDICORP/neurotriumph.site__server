@@ -11,6 +11,7 @@ import site.neurotriumph.www.constant.Field;
 import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.entity.User;
+import site.neurotriumph.www.pojo.DeleteUserRequestBody;
 import site.neurotriumph.www.pojo.GetUserResponseBody;
 import site.neurotriumph.www.pojo.UpdateEmailRequestBody;
 import site.neurotriumph.www.pojo.UpdatePasswordRequestBody;
@@ -29,6 +30,23 @@ public class UserService {
 
   @Autowired
   private MailSenderService mailSenderService;
+
+  public void deleteUser(DeleteUserRequestBody deleteUserRequestBody, Long id) {
+    User user = userRepository.findConfirmedById(id)
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    if (!user.getPassword_hash()
+      .equals(DigestUtils.sha256Hex(deleteUserRequestBody.getPassword()))) {
+      throw new IllegalStateException(Message.WRONG_PASSWORD);
+    }
+
+    String token = JWT.create()
+      .withClaim(Field.USER_ID, user.getId())
+      .withExpiresAt(new Date(System.currentTimeMillis() + Const.CONFIRMATION_TOKEN_LIFETIME))
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.USER_DELETE_CONFIRMATION));
+
+    mailSenderService.send(user.getEmail(), "Neuro Triumph", token);
+  }
 
   @Transactional
   public void confirmEmailUpdate(Long id, String newEmail) {
