@@ -69,6 +69,9 @@ public class ConfirmRegistrationUnitTest {
 
     authService.confirmRegistration(1L);
 
+    Mockito.verify(userRepository, Mockito.times(1))
+      .findById(ArgumentMatchers.eq(1L));
+
     Mockito.verify(user, Mockito.times(1))
       .setConfirmed(ArgumentMatchers.eq(true));
   }

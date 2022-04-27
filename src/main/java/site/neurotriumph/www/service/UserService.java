@@ -31,6 +31,13 @@ public class UserService {
   @Autowired
   private MailSenderService mailSenderService;
 
+  public void confirmUserDeletion(Long id) {
+    userRepository.findConfirmedById(id)
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    userRepository.deleteById(id);
+  }
+
   public void deleteUser(DeleteUserRequestBody deleteUserRequestBody, Long id) {
     User user = userRepository.findConfirmedById(id)
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));

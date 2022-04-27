@@ -71,6 +71,9 @@ public class ConfirmPasswordUpdateUnitTest {
 
     userService.confirmPasswordUpdate(user.getId(), newPasswordHash);
 
+    Mockito.verify(userRepository, Mockito.times(1))
+      .findConfirmedById(ArgumentMatchers.eq(user.getId()));
+
     Mockito.verify(user, Mockito.times(1))
       .getPassword_hash();
 

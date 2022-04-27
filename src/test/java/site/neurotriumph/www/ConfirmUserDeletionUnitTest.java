@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class ConfirmEmailUpdateUnitTest {
+public class ConfirmUserDeletionUnitTest {
   @Autowired
   private UserService userService;
 
@@ -28,30 +28,12 @@ public class ConfirmEmailUpdateUnitTest {
   private UserRepository userRepository;
 
   @Test
-  public void shouldThrowIllegalStateExceptionBecauseNothingToUpdate() {
-    IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-      User user = Mockito.spy(new User());
-      user.setId(1L);
-      user.setEmail("test@gmail.com");
-
-      Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(user.getId())))
-        .thenReturn(Optional.of(user));
-
-      String newEmail = "test@gmail.com";
-
-      userService.confirmEmailUpdate(user.getId(), newEmail);
-    });
-
-    assertEquals(Message.NOTHING_TO_UPDATE, exception.getMessage());
-  }
-
-  @Test
   public void shouldThrowIllegalStateExceptionBecauseUserDoesNotExist() {
     IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(1L)))
         .thenReturn(Optional.empty());
 
-      userService.confirmEmailUpdate(1L, "new_email@gmail.com");
+      userService.confirmUserDeletion(1L);
     });
 
     assertEquals(Message.USER_DOES_NOT_EXIST, exception.getMessage());
@@ -61,25 +43,16 @@ public class ConfirmEmailUpdateUnitTest {
   public void shouldUpdateEmail() {
     User user = Mockito.spy(new User());
     user.setId(1L);
-    user.setEmail("test@gmail.com");
 
     Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(user.getId())))
       .thenReturn(Optional.of(user));
 
-    String newEmail = "new_email@gmail.com";
-
-    userService.confirmEmailUpdate(user.getId(), newEmail);
+    userService.confirmUserDeletion(user.getId());
 
     Mockito.verify(userRepository, Mockito.times(1))
       .findConfirmedById(ArgumentMatchers.eq(user.getId()));
 
-    Mockito.verify(user, Mockito.times(1))
-      .getEmail();
-
-    Mockito.verify(user, Mockito.times(1))
-      .getEmail();
-
-    Mockito.verify(user, Mockito.times(1))
-      .setEmail(newEmail);
+    Mockito.verify(userRepository, Mockito.times(1))
+      .deleteById(ArgumentMatchers.eq(user.getId()));
   }
 }

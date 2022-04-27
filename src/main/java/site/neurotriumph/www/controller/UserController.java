@@ -29,10 +29,18 @@ public class UserController {
   @Autowired
   private UserService userService;
 
+  @PutMapping(baseUrl + "/delete/confirm")
+  @WithAuthToken
+  @WithConfirmationToken(TokenMarker.USER_DELETE_CONFIRMATION)
+  public void confirmUserDeletion(@Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
+                                  DecodedJWT decodedJWT) {
+    userService.confirmUserDeletion(decodedJWT.getClaim(Field.USER_ID).asLong());
+  }
+
   @DeleteMapping(baseUrl)
   @WithAuthToken
   public void deleteUser(@Valid @RequestBody DeleteUserRequestBody deleteUserRequestBody,
-                          DecodedJWT decodedJWT) {
+                         DecodedJWT decodedJWT) {
     userService.deleteUser(deleteUserRequestBody,
       decodedJWT.getClaim(Field.USER_ID).asLong());
   }
