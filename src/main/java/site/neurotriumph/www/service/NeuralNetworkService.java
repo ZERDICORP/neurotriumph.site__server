@@ -7,8 +7,11 @@ import site.neurotriumph.www.entity.NeuralNetwork;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkResponseBody;
 import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
+import site.neurotriumph.www.pojo.UpdateNeuralNetworkNameRequestBody;
 import site.neurotriumph.www.repository.NeuralNetworkRepository;
 import site.neurotriumph.www.repository.UserRepository;
+
+import javax.transaction.Transactional;
 
 @Service
 public class NeuralNetworkService {
@@ -17,6 +20,23 @@ public class NeuralNetworkService {
 
   @Autowired
   private NeuralNetworkRepository neuralNetworkRepository;
+
+  @Transactional
+  public void updateName(Long userId, UpdateNeuralNetworkNameRequestBody updateNeuralNetworkNameRequestBody) {
+    userRepository.findConfirmedById(userId)
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    NeuralNetwork neuralNetwork = neuralNetworkRepository.findByIdAndOwnerId(
+        updateNeuralNetworkNameRequestBody.getId(), userId)
+      .orElseThrow(() -> new IllegalStateException(Message.NN_DOES_NOT_EXIST));
+
+    if (neuralNetwork.getName().equals(
+      updateNeuralNetworkNameRequestBody.getNew_name())) {
+      throw new IllegalStateException(Message.NOTHING_TO_UPDATE);
+    }
+
+    neuralNetwork.setName(updateNeuralNetworkNameRequestBody.getNew_name());
+  }
 
   public GetNeuralNetworkResponseBody get(Long userId, Long id) {
     userRepository.findConfirmedById(userId)

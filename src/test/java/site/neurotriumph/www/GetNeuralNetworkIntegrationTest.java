@@ -22,6 +22,7 @@ import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.ErrorResponseBody;
 import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
+import site.neurotriumph.www.pojo.UpdateNeuralNetworkNameRequestBody;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,6 +33,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -54,18 +56,32 @@ public class GetNeuralNetworkIntegrationTest {
 
   @Test
   @Sql(value = {"/sql/insert_confirmed_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+  @Sql(value = {"/sql/insert_neural_network_with_owner_id_2.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+  @Sql(value = {"/sql/truncate_neural_network.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnNeuralNetworkDoesNotExist() throws Exception {
+    List<Long> invalidIds = new ArrayList<>();
+    /*
+     * There is no neural network with this id.
+     * */
+    invalidIds.add(1L);
+    /*
+     * The neural network with this id belongs to another user.
+     * */
+    invalidIds.add(2L);
+
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
 
-    this.mockMvc.perform(get(baseUrl + "/1")
-        .header(Header.AUTHENTICATION_TOKEN, token))
-      .andDo(print())
-      .andExpect(status().isBadRequest())
-      .andExpect(content().string(objectMapper.writeValueAsString(
-        new ErrorResponseBody(Message.NN_DOES_NOT_EXIST))));
+    for (Long invalidId : invalidIds) {
+      this.mockMvc.perform(get(baseUrl + "/" + invalidId)
+          .header(Header.AUTHENTICATION_TOKEN, token))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(objectMapper.writeValueAsString(
+          new ErrorResponseBody(Message.NN_DOES_NOT_EXIST))));
+    }
   }
 
   @Test
