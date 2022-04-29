@@ -14,4 +14,7 @@ public interface NeuralNetworkRepository extends JpaRepository<NeuralNetwork, Lo
 
   @Query("SELECT nn FROM neural_network nn WHERE nn.api_root = :api_root AND nn.owner_id = :owner_id")
   Optional<NeuralNetwork> findByApiRootAndOwnerId(String api_root, Long owner_id);
+
+  @Query("SELECT nn FROM neural_network nn WHERE nn.id = :id AND nn.owner_id = :owner_id")
+  Optional<NeuralNetwork> findByIdAndOwnerId(Long id, Long owner_id);
 }

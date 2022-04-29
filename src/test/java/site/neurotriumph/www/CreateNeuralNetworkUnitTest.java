@@ -59,7 +59,7 @@ public class CreateNeuralNetworkUnitTest {
           user.getId()))
         .thenReturn(Optional.of(new NeuralNetwork()));
 
-      neuralNetworkService.createNeuralNetwork(
+      neuralNetworkService.create(
         createNeuralNetworkRequestBody,
         user.getId());
     });
@@ -86,7 +86,7 @@ public class CreateNeuralNetworkUnitTest {
           user.getId()))
         .thenReturn(Optional.of(new NeuralNetwork()));
 
-      neuralNetworkService.createNeuralNetwork(
+      neuralNetworkService.create(
         createNeuralNetworkRequestBody,
         user.getId());
     });
@@ -105,7 +105,7 @@ public class CreateNeuralNetworkUnitTest {
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(1L)))
         .thenReturn(Optional.empty());
 
-      neuralNetworkService.createNeuralNetwork(
+      neuralNetworkService.create(
         createNeuralNetworkRequestBody,
         1L);
     });
@@ -142,10 +142,11 @@ public class CreateNeuralNetworkUnitTest {
     Mockito.when(neuralNetworkRepository.save(ArgumentMatchers.any(NeuralNetwork.class)))
       .thenReturn(neuralNetwork);
 
-    CreateNeuralNetworkResponseBody createNeuralNetworkResponseBody = neuralNetworkService.createNeuralNetwork(
+    CreateNeuralNetworkResponseBody createNeuralNetworkResponseBody = neuralNetworkService.create(
       createNeuralNetworkRequestBody,
       user.getId());
 
+    assertNotNull(createNeuralNetworkResponseBody);
     assertNotNull(createNeuralNetworkResponseBody.getId());
     assertEquals(1L, (long) createNeuralNetworkResponseBody.getId());
 

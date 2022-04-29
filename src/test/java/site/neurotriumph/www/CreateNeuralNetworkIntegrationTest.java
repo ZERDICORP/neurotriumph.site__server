@@ -258,31 +258,23 @@ public class CreateNeuralNetworkIntegrationTest {
   @Sql(value = {"/sql/insert_confirmed_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnNeuralNetworkApiRootCannotBeBlankError() throws Exception {
-    List<String> invalidApiRoots = new ArrayList<>();
-    invalidApiRoots.add("");
-    invalidApiRoots.add(null);
-
     CreateNeuralNetworkRequestBody createNeuralNetworkRequestBody = new CreateNeuralNetworkRequestBody(
       "human_killer",
-      "http://188.187.188.37:5000/v1/api",
+      null,
       "123");
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
 
-    for (String invalidApiRoot : invalidApiRoots) {
-      createNeuralNetworkRequestBody.setApi_root(invalidApiRoot);
-
-      this.mockMvc.perform(post(baseUrl)
-          .header(Header.AUTHENTICATION_TOKEN, token)
-          .content(objectMapper.writeValueAsString(createNeuralNetworkRequestBody))
-          .contentType(MediaType.APPLICATION_JSON))
-        .andDo(print())
-        .andExpect(status().isBadRequest())
-        .andExpect(content().string(objectMapper.writeValueAsString(
-          new ErrorResponseBody(Message.NN_API_ROOT_CANNOT_BE_BLANK))));
-    }
+    this.mockMvc.perform(post(baseUrl)
+        .header(Header.AUTHENTICATION_TOKEN, token)
+        .content(objectMapper.writeValueAsString(createNeuralNetworkRequestBody))
+        .contentType(MediaType.APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string(objectMapper.writeValueAsString(
+        new ErrorResponseBody(Message.NN_API_ROOT_CANNOT_BE_BLANK))));
   }
 
   @Test
@@ -363,6 +355,7 @@ public class CreateNeuralNetworkIntegrationTest {
     CreateNeuralNetworkResponseBody createNeuralNetworkResponseBody = objectMapper.readValue(
       mvcResult.getResponse().getContentAsString(), CreateNeuralNetworkResponseBody.class);
 
+    assertNotNull(createNeuralNetworkResponseBody);
     assertNotNull(createNeuralNetworkResponseBody.getId());
     assertEquals(1L, (long) createNeuralNetworkResponseBody.getId());
   }

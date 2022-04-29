@@ -24,4 +24,5 @@ public interface Message {
   String INVALID_NN_NAME = "invalid neural network name";
   String INVALID_NN_API_ROOT = "invalid neural network api root";
   String NN_API_ROOT_ALREADY_IN_USE = "neural network api root already in use";
+  String NN_DOES_NOT_EXIST = "neural network does not exist";
 }

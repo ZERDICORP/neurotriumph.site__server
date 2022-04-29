@@ -36,7 +36,13 @@ public class NeuralNetwork {
   private String api_secret;
 
   @Column(columnDefinition = "TINYINT(1) DEFAULT 1", nullable = false)
-  private boolean active;
+  private boolean active = true;
+
+  @Column(columnDefinition = "INT(11) DEFAULT 0", nullable = false)
+  private int tests_passed;
+
+  @Column(columnDefinition = "INT(11) DEFAULT 0", nullable = false)
+  private int tests_failed;
 
   public NeuralNetwork(Long owner_id, String name, String api_root, String api_secret) {
     this.owner_id = owner_id;

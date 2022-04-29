@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -124,7 +125,6 @@ public class GetUserIntegrationTest {
   public void shouldReturnOkStatusAndUserEmail() throws Exception {
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
-      .withExpiresAt(new Date(System.currentTimeMillis() + Const.AUTH_TOKEN_LIFETIME))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
 
     MvcResult mvcResult = this.mockMvc.perform(get(baseUrl)
@@ -136,6 +136,7 @@ public class GetUserIntegrationTest {
     GetUserResponseBody getUserResponseBody = objectMapper.readValue(
       mvcResult.getResponse().getContentAsString(), GetUserResponseBody.class);
 
+    assertNotNull(getUserResponseBody);
     assertEquals(senderEmail, getUserResponseBody.getEmail());
   }
 }

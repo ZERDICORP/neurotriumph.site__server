@@ -6,6 +6,7 @@ import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.entity.NeuralNetwork;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkResponseBody;
+import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
 import site.neurotriumph.www.repository.NeuralNetworkRepository;
 import site.neurotriumph.www.repository.UserRepository;
 
@@ -17,7 +18,23 @@ public class NeuralNetworkService {
   @Autowired
   private NeuralNetworkRepository neuralNetworkRepository;
 
-  public CreateNeuralNetworkResponseBody createNeuralNetwork(
+  public GetNeuralNetworkResponseBody get(Long id, Long userId) {
+    userRepository.findConfirmedById(userId)
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    NeuralNetwork neuralNetwork = neuralNetworkRepository.findByIdAndOwnerId(id, userId)
+      .orElseThrow(() -> new IllegalStateException(Message.NN_DOES_NOT_EXIST));
+
+    return new GetNeuralNetworkResponseBody(
+      neuralNetwork.getName(),
+      neuralNetwork.getApi_root(),
+      neuralNetwork.getApi_secret(),
+      neuralNetwork.isActive(),
+      neuralNetwork.getTests_passed(),
+      neuralNetwork.getTests_failed());
+  }
+
+  public CreateNeuralNetworkResponseBody create(
     CreateNeuralNetworkRequestBody createNeuralNetworkRequestBody,
     Long id) {
     userRepository.findConfirmedById(id)
