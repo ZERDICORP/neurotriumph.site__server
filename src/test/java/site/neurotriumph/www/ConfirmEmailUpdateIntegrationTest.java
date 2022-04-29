@@ -49,10 +49,7 @@ public class ConfirmEmailUpdateIntegrationTest {
 
   @Test
   public void shouldReturnTokenExpiredError() throws Exception {
-    Long userId = 1L;
-
     String token = JWT.create()
-      .withClaim(Field.USER_ID, userId)
       .withClaim(Field.NEW_EMAIL, "new_email@gmail.com")
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION));
 
@@ -76,7 +73,6 @@ public class ConfirmEmailUpdateIntegrationTest {
   @Test
   public void shouldReturnInvalidTokenError() throws Exception {
     String token = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
       .withClaim(Field.NEW_EMAIL, "new_email@gmail.com")
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION));
 
@@ -95,7 +91,6 @@ public class ConfirmEmailUpdateIntegrationTest {
   @Test
   public void shouldReturnAuthTokenNotSpecifiedError() throws Exception {
     String token = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
       .withClaim(Field.NEW_EMAIL, "new_email@gmail.com")
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION));
 
@@ -117,7 +112,6 @@ public class ConfirmEmailUpdateIntegrationTest {
     Long userId = 1L;
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, userId)
       .withClaim(Field.NEW_EMAIL, "test@gmail.com")
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION));
 
@@ -141,29 +135,28 @@ public class ConfirmEmailUpdateIntegrationTest {
   @Sql(value = {"/sql/insert_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnUserDoesNotExistError() throws Exception {
-    List<String> tokens = new ArrayList<>();
+    List<String> authTokens = new ArrayList<>();
 
-    tokens.add(JWT.create()
+    authTokens.add(JWT.create()
       .withClaim(Field.USER_ID, 2L)
-      .withClaim(Field.NEW_EMAIL, "new_email@gmail.com")
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION)));
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION)));
 
     /*
      * This token has id 1, and the user with id 1 exists,
      * but does not confirm, so it will also return an error.
      * */
-    tokens.add(JWT.create()
+    authTokens.add(JWT.create()
       .withClaim(Field.USER_ID, 1L)
-      .withClaim(Field.NEW_EMAIL,"new_email@gmail.com")
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION)));
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION)));
 
-    String authToken = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
+    String token = JWT.create()
+      .withClaim(Field.NEW_EMAIL, "new_email@gmail.com")
+      .withExpiresAt(new Date(System.currentTimeMillis()))
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION));
 
-    for (String token : tokens) {
-      ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
+    ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
 
+    for (String authToken : authTokens) {
       this.mockMvc.perform(put(baseUrl)
           .header(Header.AUTHENTICATION_TOKEN, authToken)
           .content(objectMapper.writeValueAsString(confirmationRequestBody))
@@ -198,7 +191,6 @@ public class ConfirmEmailUpdateIntegrationTest {
     Long userId = 1L;
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, userId)
       .withClaim(Field.NEW_EMAIL, "new_email@gmail.com")
       .withExpiresAt(new Date(System.currentTimeMillis() - 1000))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION));
@@ -226,7 +218,6 @@ public class ConfirmEmailUpdateIntegrationTest {
     Long userId = 1L;
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, userId)
       .withClaim(Field.NEW_EMAIL, "new_email@gmail.com")
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION));
 

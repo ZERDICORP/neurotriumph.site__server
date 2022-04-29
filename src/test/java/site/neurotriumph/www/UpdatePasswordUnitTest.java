@@ -66,7 +66,7 @@ public class UpdatePasswordUnitTest {
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(user.getId())))
         .thenReturn(Optional.of(user));
 
-      userService.updatePassword(updatePasswordRequestBody, user.getId());
+      userService.updatePassword(user.getId(), updatePasswordRequestBody);
     });
 
     assertEquals(Message.NOTHING_TO_UPDATE, exception.getMessage());
@@ -87,7 +87,7 @@ public class UpdatePasswordUnitTest {
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(user.getId())))
         .thenReturn(Optional.of(user));
 
-      userService.updatePassword(updatePasswordRequestBody, user.getId());
+      userService.updatePassword(user.getId(), updatePasswordRequestBody);
     });
 
     assertEquals(Message.WRONG_PASSWORD, exception.getMessage());
@@ -102,7 +102,7 @@ public class UpdatePasswordUnitTest {
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(1L)))
         .thenReturn(Optional.empty());
 
-      userService.updatePassword(updatePasswordRequestBody, 1L);
+      userService.updatePassword(1L, updatePasswordRequestBody);
     });
 
     assertEquals(Message.USER_DOES_NOT_EXIST, exception.getMessage());
@@ -134,7 +134,7 @@ public class UpdatePasswordUnitTest {
 
     UpdatePasswordRequestBody spiedUpdatePasswordRequestBody = Mockito.spy(updatePasswordRequestBody);
 
-    userService.updatePassword(spiedUpdatePasswordRequestBody, user.getId());
+    userService.updatePassword(user.getId(), spiedUpdatePasswordRequestBody);
 
     mockedStaticJWT.close();
 
@@ -165,11 +165,8 @@ public class UpdatePasswordUnitTest {
     assertDoesNotThrow(() -> {
       DecodedJWT decodedJWT = JWT.decode(token);
 
-      assertNotNull(decodedJWT.getClaim(Field.USER_ID));
       assertNotNull(decodedJWT.getClaim(Field.NEW_PASSWORD_HASH));
       assertNotNull(decodedJWT.getClaim(Field.EXPIRATION_TIME));
-
-      assertEquals(user.getId(), decodedJWT.getClaim(Field.USER_ID).asLong());
       assertEquals(DigestUtils.sha256Hex(updatePasswordRequestBody.getNew_password()),
         decodedJWT.getClaim(Field.NEW_PASSWORD_HASH).asString());
       assertTrue(decodedJWT.getClaim(Field.EXPIRATION_TIME).asLong() > 0);
@@ -179,6 +176,6 @@ public class UpdatePasswordUnitTest {
       .send(
         ArgumentMatchers.eq(user.getEmail()),
         ArgumentMatchers.eq("Neuro Triumph"),
-        ArgumentMatchers.matches(Regex.JWT_TOKEN));
+        ArgumentMatchers.any(String.class));
   }
 }

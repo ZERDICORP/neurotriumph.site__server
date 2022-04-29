@@ -115,10 +115,7 @@ public class RegisterUnitTest {
     assertDoesNotThrow(() -> {
       DecodedJWT decodedJWT = JWT.decode(token);
 
-      assertNotNull(decodedJWT.getClaim(Field.USER_ID));
       assertNotNull(decodedJWT.getClaim(Field.EXPIRATION_TIME));
-
-      assertEquals(user.getId(), decodedJWT.getClaim(Field.USER_ID).asLong());
       assertTrue(decodedJWT.getClaim(Field.EXPIRATION_TIME).asLong() > 0);
     });
 
@@ -126,6 +123,6 @@ public class RegisterUnitTest {
       .send(
         ArgumentMatchers.eq(user.getEmail()),
         ArgumentMatchers.eq("Neuro Triumph"),
-        ArgumentMatchers.matches(Regex.JWT_TOKEN));
+        ArgumentMatchers.any(String.class));
   }
 }

@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import site.neurotriumph.www.annotation.AuthTokenPayload;
+import site.neurotriumph.www.annotation.ConfirmationTokenPayload;
 import site.neurotriumph.www.annotation.WithAuthToken;
 import site.neurotriumph.www.annotation.WithConfirmationToken;
 import site.neurotriumph.www.constant.Field;
@@ -32,56 +34,57 @@ public class UserController {
   @PutMapping(baseUrl + "/delete/confirm")
   @WithAuthToken
   @WithConfirmationToken(TokenMarker.USER_DELETE_CONFIRMATION)
-  public void confirmUserDeletion(@Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
-                                  DecodedJWT decodedJWT) {
-    userService.confirmUserDeletion(decodedJWT.getClaim(Field.USER_ID).asLong());
+  public void confirmUserDeletion(@AuthTokenPayload DecodedJWT authTokenPayload,
+                                  @Valid @RequestBody ConfirmationRequestBody confirmationRequestBody) {
+    userService.confirmUserDeletion(authTokenPayload.getClaim(Field.USER_ID).asLong());
   }
 
   @DeleteMapping(baseUrl)
   @WithAuthToken
-  public void deleteUser(@Valid @RequestBody DeleteUserRequestBody deleteUserRequestBody,
-                         DecodedJWT decodedJWT) {
-    userService.deleteUser(deleteUserRequestBody,
-      decodedJWT.getClaim(Field.USER_ID).asLong());
+  public void deleteUser(@AuthTokenPayload DecodedJWT authTokenPayload,
+                         @Valid @RequestBody DeleteUserRequestBody deleteUserRequestBody) {
+    userService.deleteUser(authTokenPayload.getClaim(Field.USER_ID).asLong(),
+      deleteUserRequestBody);
   }
 
   @PutMapping(baseUrl + "/email/confirm")
   @WithAuthToken
   @WithConfirmationToken(TokenMarker.EMAIL_UPDATE_CONFIRMATION)
-  public void confirmEmailUpdate(@Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
-                                 DecodedJWT decodedJWT) {
-    userService.confirmEmailUpdate(decodedJWT.getClaim(Field.USER_ID).asLong(),
-      decodedJWT.getClaim(Field.NEW_EMAIL).asString());
+  public void confirmEmailUpdate(@AuthTokenPayload DecodedJWT authTokenPayload,
+                                 @Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
+                                 @ConfirmationTokenPayload DecodedJWT confirmationTokenPayload) {
+    userService.confirmEmailUpdate(authTokenPayload.getClaim(Field.USER_ID).asLong(),
+      confirmationTokenPayload.getClaim(Field.NEW_EMAIL).asString());
   }
 
   @PutMapping(baseUrl + "/email")
   @WithAuthToken
-  public void updateEmail(@Valid @RequestBody UpdateEmailRequestBody updateEmailRequestBody,
-                          DecodedJWT decodedJWT) {
-    userService.updateEmail(updateEmailRequestBody,
-      decodedJWT.getClaim(Field.USER_ID).asLong());
+  public void updateEmail(@AuthTokenPayload DecodedJWT authTokenPayload,
+                          @Valid @RequestBody UpdateEmailRequestBody updateEmailRequestBody) {
+    userService.updateEmail(authTokenPayload.getClaim(Field.USER_ID).asLong(),
+      updateEmailRequestBody);
   }
 
   @PutMapping(baseUrl + "/password/confirm")
   @WithAuthToken
   @WithConfirmationToken(TokenMarker.PASSWORD_UPDATE_CONFIRMATION)
-  public void confirmPasswordUpdate(@Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
-                                    DecodedJWT decodedJWT) {
-    userService.confirmPasswordUpdate(decodedJWT.getClaim(Field.USER_ID).asLong(),
-      decodedJWT.getClaim(Field.NEW_PASSWORD_HASH).asString());
+  public void confirmPasswordUpdate(@AuthTokenPayload DecodedJWT authTokenPayload,
+                                    @Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
+                                    @ConfirmationTokenPayload DecodedJWT confirmationTokenPayload) {
+    userService.confirmPasswordUpdate(authTokenPayload.getClaim(Field.USER_ID).asLong(),
+      confirmationTokenPayload.getClaim(Field.NEW_PASSWORD_HASH).asString());
   }
 
   @PutMapping(baseUrl + "/password")
   @WithAuthToken
-  public void updatePassword(@Valid @RequestBody UpdatePasswordRequestBody updatePasswordRequestBody,
-                             DecodedJWT decodedJWT) {
-    userService.updatePassword(updatePasswordRequestBody,
-      decodedJWT.getClaim(Field.USER_ID).asLong());
+  public void updatePassword(@AuthTokenPayload DecodedJWT authTokenPayload,
+                             @Valid @RequestBody UpdatePasswordRequestBody updatePasswordRequestBody) {
+    userService.updatePassword(authTokenPayload.getClaim(Field.USER_ID).asLong(), updatePasswordRequestBody);
   }
 
   @GetMapping(baseUrl)
   @WithAuthToken
-  public GetUserResponseBody getUser(DecodedJWT decodedJWT) {
-    return userService.getUser(decodedJWT.getClaim(Field.USER_ID).asLong());
+  public GetUserResponseBody getUser(@AuthTokenPayload DecodedJWT authTokenPayload) {
+    return userService.getUser(authTokenPayload.getClaim(Field.USER_ID).asLong());
   }
 }

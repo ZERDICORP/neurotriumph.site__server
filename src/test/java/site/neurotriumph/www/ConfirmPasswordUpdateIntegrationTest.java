@@ -54,7 +54,6 @@ public class ConfirmPasswordUpdateIntegrationTest {
     Long userId = 1L;
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, userId)
       .withClaim(Field.NEW_PASSWORD_HASH, DigestUtils.sha256Hex("Qwerty123"))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION));
 
@@ -78,7 +77,6 @@ public class ConfirmPasswordUpdateIntegrationTest {
   @Test
   public void shouldReturnInvalidTokenError() throws Exception {
     String token = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
       .withClaim(Field.NEW_PASSWORD_HASH, DigestUtils.sha256Hex("Qwerty123"))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION));
 
@@ -97,7 +95,6 @@ public class ConfirmPasswordUpdateIntegrationTest {
   @Test
   public void shouldReturnAuthTokenNotSpecifiedError() throws Exception {
     String token = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
       .withClaim(Field.NEW_PASSWORD_HASH, DigestUtils.sha256Hex("Qwerty123"))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION));
 
@@ -119,7 +116,6 @@ public class ConfirmPasswordUpdateIntegrationTest {
     Long userId = 1L;
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, userId)
       .withClaim(Field.NEW_PASSWORD_HASH, DigestUtils.sha256Hex("Qwerty123"))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION));
 
@@ -143,29 +139,28 @@ public class ConfirmPasswordUpdateIntegrationTest {
   @Sql(value = {"/sql/insert_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnUserDoesNotExistError() throws Exception {
-    List<String> tokens = new ArrayList<>();
+    List<String> authTokens = new ArrayList<>();
 
-    tokens.add(JWT.create()
+    authTokens.add(JWT.create()
       .withClaim(Field.USER_ID, 2L)
-      .withClaim(Field.NEW_PASSWORD_HASH, DigestUtils.sha256Hex("Qwerty1234"))
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION)));
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION)));
 
     /*
      * This token has id 1, and the user with id 1 exists,
      * but does not confirm, so it will also return an error.
      * */
-    tokens.add(JWT.create()
+    authTokens.add(JWT.create()
       .withClaim(Field.USER_ID, 1L)
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION)));
+
+    String token = JWT.create()
       .withClaim(Field.NEW_PASSWORD_HASH, DigestUtils.sha256Hex("Qwerty1234"))
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION)));
+      .withExpiresAt(new Date(System.currentTimeMillis()))
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION));
 
-    String authToken = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
+    ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
 
-    for (String token : tokens) {
-      ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
-
+    for (String authToken : authTokens) {
       this.mockMvc.perform(put(baseUrl)
           .header(Header.AUTHENTICATION_TOKEN, authToken)
           .content(objectMapper.writeValueAsString(confirmationRequestBody))
@@ -200,7 +195,6 @@ public class ConfirmPasswordUpdateIntegrationTest {
     Long userId = 1L;
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, userId)
       .withClaim(Field.NEW_PASSWORD_HASH, DigestUtils.sha256Hex("Qwerty1234"))
       .withExpiresAt(new Date(System.currentTimeMillis() - 1000))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION));
@@ -228,7 +222,6 @@ public class ConfirmPasswordUpdateIntegrationTest {
     Long userId = 1L;
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, userId)
       .withClaim(Field.NEW_PASSWORD_HASH, DigestUtils.sha256Hex("Qwerty1234"))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION));
 

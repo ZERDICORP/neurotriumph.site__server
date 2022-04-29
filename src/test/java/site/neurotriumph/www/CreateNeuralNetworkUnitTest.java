@@ -59,9 +59,7 @@ public class CreateNeuralNetworkUnitTest {
           user.getId()))
         .thenReturn(Optional.of(new NeuralNetwork()));
 
-      neuralNetworkService.create(
-        createNeuralNetworkRequestBody,
-        user.getId());
+      neuralNetworkService.create(user.getId(), createNeuralNetworkRequestBody);
     });
 
     assertEquals(Message.NN_API_ROOT_ALREADY_IN_USE, exception.getMessage());
@@ -86,9 +84,7 @@ public class CreateNeuralNetworkUnitTest {
           user.getId()))
         .thenReturn(Optional.of(new NeuralNetwork()));
 
-      neuralNetworkService.create(
-        createNeuralNetworkRequestBody,
-        user.getId());
+      neuralNetworkService.create(user.getId(), createNeuralNetworkRequestBody);
     });
 
     assertEquals(Message.NN_NAME_ALREADY_IN_USE, exception.getMessage());
@@ -105,9 +101,7 @@ public class CreateNeuralNetworkUnitTest {
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(1L)))
         .thenReturn(Optional.empty());
 
-      neuralNetworkService.create(
-        createNeuralNetworkRequestBody,
-        1L);
+      neuralNetworkService.create(1L, createNeuralNetworkRequestBody);
     });
 
     assertEquals(Message.USER_DOES_NOT_EXIST, exception.getMessage());
@@ -143,8 +137,8 @@ public class CreateNeuralNetworkUnitTest {
       .thenReturn(neuralNetwork);
 
     CreateNeuralNetworkResponseBody createNeuralNetworkResponseBody = neuralNetworkService.create(
-      createNeuralNetworkRequestBody,
-      user.getId());
+      user.getId(),
+      createNeuralNetworkRequestBody);
 
     assertNotNull(createNeuralNetworkResponseBody);
     assertNotNull(createNeuralNetworkResponseBody.getId());

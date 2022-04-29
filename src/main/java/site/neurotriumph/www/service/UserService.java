@@ -38,7 +38,7 @@ public class UserService {
     userRepository.deleteById(id);
   }
 
-  public void deleteUser(DeleteUserRequestBody deleteUserRequestBody, Long id) {
+  public void deleteUser(Long id, DeleteUserRequestBody deleteUserRequestBody) {
     User user = userRepository.findConfirmedById(id)
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
 
@@ -48,7 +48,6 @@ public class UserService {
     }
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, user.getId())
       .withExpiresAt(new Date(System.currentTimeMillis() + Const.CONFIRMATION_TOKEN_LIFETIME))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.USER_DELETE_CONFIRMATION));
 
@@ -67,7 +66,7 @@ public class UserService {
     user.setEmail(newEmail);
   }
 
-  public void updateEmail(UpdateEmailRequestBody updateEmailRequestBody, Long id) {
+  public void updateEmail(Long id, UpdateEmailRequestBody updateEmailRequestBody) {
     User user = userRepository.findConfirmedById(id)
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
 
@@ -81,7 +80,6 @@ public class UserService {
     }
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, user.getId())
       .withClaim(Field.NEW_EMAIL, updateEmailRequestBody.getNew_email())
       .withExpiresAt(new Date(System.currentTimeMillis() + Const.CONFIRMATION_TOKEN_LIFETIME))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.EMAIL_UPDATE_CONFIRMATION));
@@ -101,7 +99,7 @@ public class UserService {
     user.setPassword_hash(newPasswordHash);
   }
 
-  public void updatePassword(UpdatePasswordRequestBody updatePasswordRequestBody, Long id) {
+  public void updatePassword(Long id, UpdatePasswordRequestBody updatePasswordRequestBody) {
     User user = userRepository.findConfirmedById(id)
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
 
@@ -117,7 +115,6 @@ public class UserService {
     }
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, user.getId())
       .withClaim(Field.NEW_PASSWORD_HASH, newPasswordHash)
       .withExpiresAt(new Date(System.currentTimeMillis() + Const.CONFIRMATION_TOKEN_LIFETIME))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.PASSWORD_UPDATE_CONFIRMATION));

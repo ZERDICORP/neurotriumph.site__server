@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import site.neurotriumph.www.annotation.ConfirmationTokenPayload;
 import site.neurotriumph.www.annotation.WithConfirmationToken;
 import site.neurotriumph.www.constant.Field;
 import site.neurotriumph.www.constant.TokenMarker;
@@ -32,8 +33,8 @@ public class AuthController {
   @PutMapping("/register/confirm")
   @WithConfirmationToken(TokenMarker.REGISTRATION_CONFIRMATION)
   public void confirmRegistration(@Valid @RequestBody ConfirmationRequestBody confirmationRequestBody,
-                                  DecodedJWT decodedJWT) {
-    authService.confirmRegistration(decodedJWT.getClaim(Field.USER_ID).asLong());
+                                  @ConfirmationTokenPayload DecodedJWT confirmationTokenPayload) {
+    authService.confirmRegistration(confirmationTokenPayload.getClaim(Field.USER_ID).asLong());
   }
 
   @PostMapping("/register")

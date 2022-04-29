@@ -9,18 +9,23 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import site.neurotriumph.www.annotation.AuthTokenPayload;
 import site.neurotriumph.www.constant.Header;
 import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.constant.TokenMarker;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
@@ -68,13 +73,32 @@ public class WithAuthTokenAspect {
     }
 
     /*
-     * If an object of type DecodedJWT is expected as a parameter
-     * to the method, then we will replace it with the decodedJWT.
+     * If an object of type DecodedJWT with annotation @AuthTokenPayload
+     * is expected as a parameter to the method, then we will replace it
+     * with the decodedJWT.
      * */
 
-    List<Object> arguments = Arrays.asList(proceedingJoinPoint.getArgs());
-    arguments.replaceAll(o -> o instanceof DecodedJWT ? decodedJWT : o);
+    Object[] arguments = proceedingJoinPoint.getArgs();
+    Annotation[][] annotations = ((MethodSignature) proceedingJoinPoint.getSignature())
+      .getMethod()
+      .getParameterAnnotations();
 
-    return proceedingJoinPoint.proceed(arguments.toArray());
+    for (int i = 0; i < arguments.length; i++) {
+      if (!(arguments[i] instanceof DecodedJWT)) {
+        continue;
+      }
+
+      for (int j = 0; j < annotations[i].length; j++) {
+        if (!annotations[i][j].annotationType()
+          .equals(AuthTokenPayload.class)) {
+          continue;
+        }
+
+        arguments[i] = decodedJWT;
+        break;
+      }
+    }
+
+    return proceedingJoinPoint.proceed(arguments);
   }
 }

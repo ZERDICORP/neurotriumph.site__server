@@ -49,7 +49,7 @@ public class GetNeuralNetworkUnitTest {
       Mockito.when(neuralNetworkRepository.findByIdAndOwnerId(1L, user.getId()))
         .thenReturn(Optional.empty());
 
-      neuralNetworkService.get(1L, user.getId());
+      neuralNetworkService.get(user.getId(), 1L);
     });
 
     assertEquals(Message.NN_DOES_NOT_EXIST, exception.getMessage());
@@ -90,8 +90,8 @@ public class GetNeuralNetworkUnitTest {
       .thenReturn(Optional.of(spiedNeuralNetwork));
 
     GetNeuralNetworkResponseBody getNeuralNetworkResponseBody = neuralNetworkService.get(
-      neuralNetwork.getId(),
-      user.getId());
+      user.getId(),
+      neuralNetwork.getId());
 
     assertNotNull(getNeuralNetworkResponseBody);
     assertEquals(neuralNetwork.getName(), getNeuralNetworkResponseBody.getName());

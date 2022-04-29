@@ -18,7 +18,7 @@ public class NeuralNetworkService {
   @Autowired
   private NeuralNetworkRepository neuralNetworkRepository;
 
-  public GetNeuralNetworkResponseBody get(Long id, Long userId) {
+  public GetNeuralNetworkResponseBody get(Long userId, Long id) {
     userRepository.findConfirmedById(userId)
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
 
@@ -34,24 +34,23 @@ public class NeuralNetworkService {
       neuralNetwork.getTests_failed());
   }
 
-  public CreateNeuralNetworkResponseBody create(
-    CreateNeuralNetworkRequestBody createNeuralNetworkRequestBody,
-    Long id) {
-    userRepository.findConfirmedById(id)
+  public CreateNeuralNetworkResponseBody create(Long userId,
+                                                CreateNeuralNetworkRequestBody createNeuralNetworkRequestBody) {
+    userRepository.findConfirmedById(userId)
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
 
-    neuralNetworkRepository.findByNameAndOwnerId(createNeuralNetworkRequestBody.getName(), id)
+    neuralNetworkRepository.findByNameAndOwnerId(createNeuralNetworkRequestBody.getName(), userId)
       .ifPresent(o -> {
         throw new IllegalStateException(Message.NN_NAME_ALREADY_IN_USE);
       });
 
-    neuralNetworkRepository.findByApiRootAndOwnerId(createNeuralNetworkRequestBody.getApi_root(), id)
+    neuralNetworkRepository.findByApiRootAndOwnerId(createNeuralNetworkRequestBody.getApi_root(), userId)
       .ifPresent(o -> {
         throw new IllegalStateException(Message.NN_API_ROOT_ALREADY_IN_USE);
       });
 
     NeuralNetwork neuralNetwork = neuralNetworkRepository.save(new NeuralNetwork(
-      id,
+      userId,
       createNeuralNetworkRequestBody.getName(),
       createNeuralNetworkRequestBody.getApi_root(),
       createNeuralNetworkRequestBody.getApi_secret()));

@@ -3,6 +3,7 @@ package site.neurotriumph.www;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +52,6 @@ public class ConfirmUserDeletionIntegrationTest {
     Long userId = 1L;
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, userId)
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.USER_DELETE_CONFIRMATION));
 
     ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
@@ -74,7 +74,6 @@ public class ConfirmUserDeletionIntegrationTest {
   @Test
   public void shouldReturnInvalidTokenError() throws Exception {
     String token = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.USER_DELETE_CONFIRMATION));
 
     ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
@@ -92,7 +91,6 @@ public class ConfirmUserDeletionIntegrationTest {
   @Test
   public void shouldReturnAuthTokenNotSpecifiedError() throws Exception {
     String token = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.USER_DELETE_CONFIRMATION));
 
     ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
@@ -110,27 +108,27 @@ public class ConfirmUserDeletionIntegrationTest {
   @Sql(value = {"/sql/insert_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnUserDoesNotExistError() throws Exception {
-    List<String> tokens = new ArrayList<>();
+    List<String> authTokens = new ArrayList<>();
 
-    tokens.add(JWT.create()
+    authTokens.add(JWT.create()
       .withClaim(Field.USER_ID, 2L)
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.USER_DELETE_CONFIRMATION)));
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION)));
 
     /*
      * This token has id 1, and the user with id 1 exists,
      * but does not confirm, so it will also return an error.
      * */
-    tokens.add(JWT.create()
+    authTokens.add(JWT.create()
       .withClaim(Field.USER_ID, 1L)
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.USER_DELETE_CONFIRMATION)));
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION)));
 
-    String authToken = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
+    String token = JWT.create()
+      .withExpiresAt(new Date(System.currentTimeMillis()))
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.USER_DELETE_CONFIRMATION));
 
-    for (String token : tokens) {
-      ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
+    ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);
 
+    for (String authToken : authTokens) {
       this.mockMvc.perform(put(baseUrl)
           .header(Header.AUTHENTICATION_TOKEN, authToken)
           .content(objectMapper.writeValueAsString(confirmationRequestBody))
@@ -165,7 +163,6 @@ public class ConfirmUserDeletionIntegrationTest {
     Long userId = 1L;
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, userId)
       .withExpiresAt(new Date(System.currentTimeMillis() - 1000))
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.USER_DELETE_CONFIRMATION));
 
@@ -192,7 +189,6 @@ public class ConfirmUserDeletionIntegrationTest {
     Long userId = 1L;
 
     String token = JWT.create()
-      .withClaim(Field.USER_ID, userId)
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.USER_DELETE_CONFIRMATION));
 
     ConfirmationRequestBody confirmationRequestBody = new ConfirmationRequestBody(token);

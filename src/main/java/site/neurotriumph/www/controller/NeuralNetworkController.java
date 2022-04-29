@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import site.neurotriumph.www.annotation.AuthTokenPayload;
 import site.neurotriumph.www.annotation.WithAuthToken;
 import site.neurotriumph.www.constant.Field;
 import site.neurotriumph.www.constant.Regex;
@@ -26,16 +27,17 @@ public class NeuralNetworkController {
 
   @GetMapping("/user/nn/{id:" + Regex.POSITIVE_INTEGER_NUMBER + "}")
   @WithAuthToken
-  public GetNeuralNetworkResponseBody getNeuralNetwork(@PathVariable Long id, DecodedJWT decodedJWT) {
-    return neuralNetworkService.get(id, decodedJWT.getClaim(Field.USER_ID).asLong());
+  public GetNeuralNetworkResponseBody getNeuralNetwork(@AuthTokenPayload DecodedJWT authTokenPayload,
+                                                       @PathVariable Long id) {
+    return neuralNetworkService.get(authTokenPayload.getClaim(Field.USER_ID).asLong(), id);
   }
 
   @PostMapping("/nn")
   @WithAuthToken
-  public CreateNeuralNetworkResponseBody createNeuralNetwork(
-    @Valid @RequestBody CreateNeuralNetworkRequestBody createNeuralNetworkRequestBody,
-    DecodedJWT decodedJWT) {
-    return neuralNetworkService.create(createNeuralNetworkRequestBody,
-      decodedJWT.getClaim(Field.USER_ID).asLong());
+  public CreateNeuralNetworkResponseBody createNeuralNetwork(@AuthTokenPayload DecodedJWT authTokenPayload,
+                                                             @Valid @RequestBody CreateNeuralNetworkRequestBody
+                                                               createNeuralNetworkRequestBody) {
+    return neuralNetworkService.create(authTokenPayload.getClaim(Field.USER_ID).asLong(),
+      createNeuralNetworkRequestBody);
   }
 }

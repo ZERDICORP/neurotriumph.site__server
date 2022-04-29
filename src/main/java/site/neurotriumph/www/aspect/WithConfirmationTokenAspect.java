@@ -11,13 +11,17 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import site.neurotriumph.www.annotation.AuthTokenPayload;
+import site.neurotriumph.www.annotation.ConfirmationTokenPayload;
 import site.neurotriumph.www.annotation.WithConfirmationToken;
 import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.ConfirmationRequestBody;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Aspect
 @Component
@@ -31,8 +35,8 @@ public class WithConfirmationTokenAspect {
      * Obtaining and verifying a token.
      * */
 
-    List<Object> arguments = Arrays.asList(proceedingJoinPoint.getArgs());
-    ConfirmationRequestBody confirmationRequestBody = (ConfirmationRequestBody) arguments.stream()
+    Object[] arguments = proceedingJoinPoint.getArgs();
+    ConfirmationRequestBody confirmationRequestBody = (ConfirmationRequestBody) Stream.of(arguments)
       .filter(o -> o instanceof ConfirmationRequestBody)
       .findAny()
       .orElseThrow(() -> new RuntimeException(Message.CONFIRMATION_REQUEST_BODY_REQUIRED));
@@ -62,12 +66,31 @@ public class WithConfirmationTokenAspect {
     }
 
     /*
-     * If an object of type DecodedJWT is expected as a parameter
-     * to the method, then we will replace it with the decodedJWT.
+     * If an object of type DecodedJWT with annotation @ConfirmationTokenPayload
+     * is expected as a parameter to the method, then we will replace it
+     * with the decodedJWT.
      * */
 
-    arguments.replaceAll(o -> o instanceof DecodedJWT ? decodedJWT : o);
+    Annotation[][] annotations = ((MethodSignature) proceedingJoinPoint.getSignature())
+      .getMethod()
+      .getParameterAnnotations();
 
-    return proceedingJoinPoint.proceed(arguments.toArray());
+    for (int i = 0; i < arguments.length; i++) {
+      if (!(arguments[i] instanceof DecodedJWT)) {
+        continue;
+      }
+
+      for (int j = 0; j < annotations[i].length; j++) {
+        if (!annotations[i][j].annotationType()
+          .equals(ConfirmationTokenPayload.class)) {
+          continue;
+        }
+
+        arguments[i] = decodedJWT;
+        break;
+      }
+    }
+
+    return proceedingJoinPoint.proceed(arguments);
   }
 }

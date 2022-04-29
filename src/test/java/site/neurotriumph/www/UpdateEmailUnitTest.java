@@ -66,7 +66,7 @@ public class UpdateEmailUnitTest {
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(user.getId())))
         .thenReturn(Optional.of(user));
 
-      userService.updateEmail(updateEmailRequestBody, user.getId());
+      userService.updateEmail(user.getId(), updateEmailRequestBody);
     });
 
     assertEquals(Message.NOTHING_TO_UPDATE, exception.getMessage());
@@ -87,7 +87,7 @@ public class UpdateEmailUnitTest {
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(user.getId())))
         .thenReturn(Optional.of(user));
 
-      userService.updateEmail(updateEmailRequestBody, user.getId());
+      userService.updateEmail(user.getId(), updateEmailRequestBody);
     });
 
     assertEquals(Message.WRONG_PASSWORD, exception.getMessage());
@@ -102,7 +102,7 @@ public class UpdateEmailUnitTest {
       Mockito.when(userRepository.findConfirmedById(ArgumentMatchers.eq(1L)))
         .thenReturn(Optional.empty());
 
-      userService.updateEmail(updateEmailRequestBody, 1L);
+      userService.updateEmail(1L, updateEmailRequestBody);
     });
 
     assertEquals(Message.USER_DOES_NOT_EXIST, exception.getMessage());
@@ -134,7 +134,7 @@ public class UpdateEmailUnitTest {
 
     UpdateEmailRequestBody spiedUpdateEmailRequestBody = Mockito.spy(updateEmailRequestBody);
 
-    userService.updateEmail(spiedUpdateEmailRequestBody, user.getId());
+    userService.updateEmail(user.getId(), spiedUpdateEmailRequestBody);
 
     mockedStatic.close();
 
@@ -165,11 +165,8 @@ public class UpdateEmailUnitTest {
     assertDoesNotThrow(() -> {
       DecodedJWT decodedJWT = JWT.decode(token);
 
-      assertNotNull(decodedJWT.getClaim(Field.USER_ID));
       assertNotNull(decodedJWT.getClaim(Field.NEW_EMAIL));
       assertNotNull(decodedJWT.getClaim(Field.EXPIRATION_TIME));
-
-      assertEquals(user.getId(), decodedJWT.getClaim(Field.USER_ID).asLong());
       assertEquals(updateEmailRequestBody.getNew_email(),
         decodedJWT.getClaim(Field.NEW_EMAIL).asString());
       assertTrue(decodedJWT.getClaim(Field.EXPIRATION_TIME).asLong() > 0);
@@ -179,6 +176,6 @@ public class UpdateEmailUnitTest {
       .send(
         ArgumentMatchers.eq(user.getEmail()),
         ArgumentMatchers.eq("Neuro Triumph"),
-        ArgumentMatchers.matches(Regex.JWT_TOKEN));
+        ArgumentMatchers.any(String.class));
   }
 }
