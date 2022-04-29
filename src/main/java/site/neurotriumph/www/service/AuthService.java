@@ -72,8 +72,7 @@ public class AuthService {
 
     User user = userRepository.save(new User(
       registerRequestBody.getEmail(),
-      DigestUtils.sha256Hex(registerRequestBody.getPassword())
-    ));
+      DigestUtils.sha256Hex(registerRequestBody.getPassword())));
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, user.getId())

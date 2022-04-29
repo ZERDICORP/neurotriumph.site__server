@@ -17,4 +17,11 @@ public interface Message {
   String WRONG_PASSWORD = "wrong password";
   String AUTH_TOKEN_EXPIRED = "authentication token expired";
   String NOTHING_TO_UPDATE = "nothing to update";
+  String NN_NAME_CANNOT_BE_BLANK = "neural network name cannot be blank";
+  String NN_API_ROOT_CANNOT_BE_BLANK = "neural network api root cannot be blank";
+  String NN_API_SECRET_CANNOT_BE_BLANK = "neural network api secret cannot be blank";
+  String NN_NAME_ALREADY_IN_USE = "neural network name already in use";
+  String INVALID_NN_NAME = "invalid neural network name";
+  String INVALID_NN_API_ROOT = "invalid neural network api root";
+  String NN_API_ROOT_ALREADY_IN_USE = "neural network api root already in use";
 }

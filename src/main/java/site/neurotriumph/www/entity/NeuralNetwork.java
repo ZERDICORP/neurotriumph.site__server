@@ -1,29 +1,31 @@
 package site.neurotriumph.www.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.IdClass;
 
-@Entity
+@Entity(name = "neural_network")
 @Getter
 @Setter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@IdClass(NeuralNetworkUniqueness.class)
 public class NeuralNetwork {
   @Id
-  @Column(columnDefinition = "BIGINT(20) UNIQUE AUTO_INCREMENT", nullable = false)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Id
   @Column(nullable = false)
   private Long owner_id;
 
-  @Id
   @Column(nullable = false)
   private String name;
 
@@ -35,4 +37,11 @@ public class NeuralNetwork {
 
   @Column(columnDefinition = "TINYINT(1) DEFAULT 1", nullable = false)
   private boolean active;
+
+  public NeuralNetwork(Long owner_id, String name, String api_root, String api_secret) {
+    this.owner_id = owner_id;
+    this.name = name;
+    this.api_root = api_root;
+    this.api_secret = api_secret;
+  }
 }

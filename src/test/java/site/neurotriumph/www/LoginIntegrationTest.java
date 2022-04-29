@@ -27,6 +27,7 @@ import site.neurotriumph.www.pojo.LoginResponseBody;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -175,11 +176,14 @@ public class LoginIntegrationTest {
     LoginResponseBody loginResponseBody = objectMapper.readValue(
       mvcResult.getResponse().getContentAsString(), LoginResponseBody.class);
 
-    assertTrue(loginResponseBody.getUid() > 0);
+    assertNotNull(loginResponseBody.getUid());
+    assertEquals(1L, (long) loginResponseBody.getUid());
 
     /*
      * Checking the token for validity.
      * */
+
+    assertNotNull(loginResponseBody.getToken());
 
     assertDoesNotThrow(() -> {
       JWT.require(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION))
