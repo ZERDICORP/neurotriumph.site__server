@@ -7,6 +7,7 @@ import site.neurotriumph.www.entity.NeuralNetwork;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkResponseBody;
 import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
+import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiRootRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkNameRequestBody;
 import site.neurotriumph.www.repository.NeuralNetworkRepository;
 import site.neurotriumph.www.repository.UserRepository;
@@ -20,6 +21,24 @@ public class NeuralNetworkService {
 
   @Autowired
   private NeuralNetworkRepository neuralNetworkRepository;
+
+  @Transactional
+  public void updateApiRoot(Long userId,
+                            UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody) {
+    userRepository.findConfirmedById(userId)
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    NeuralNetwork neuralNetwork = neuralNetworkRepository.findByIdAndOwnerId(
+        updateNeuralNetworkApiRootRequestBody.getId(), userId)
+      .orElseThrow(() -> new IllegalStateException(Message.NN_DOES_NOT_EXIST));
+
+    if (neuralNetwork.getApi_root().equals(
+      updateNeuralNetworkApiRootRequestBody.getNew_api_root())) {
+      throw new IllegalStateException(Message.NOTHING_TO_UPDATE);
+    }
+
+    neuralNetwork.setApi_root(updateNeuralNetworkApiRootRequestBody.getNew_api_root());
+  }
 
   @Transactional
   public void updateName(Long userId, UpdateNeuralNetworkNameRequestBody updateNeuralNetworkNameRequestBody) {
