@@ -17,6 +17,7 @@ import site.neurotriumph.www.pojo.CreateNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkResponseBody;
 import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiRootRequestBody;
+import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiSecretRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkNameRequestBody;
 import site.neurotriumph.www.service.NeuralNetworkService;
 
@@ -27,6 +28,15 @@ import javax.validation.Valid;
 public class NeuralNetworkController {
   @Autowired
   private NeuralNetworkService neuralNetworkService;
+
+  @PutMapping("/user/nn/api_secret")
+  @WithAuthToken
+  public void updateApiSecret(@AuthTokenPayload DecodedJWT authTokenPayload,
+                              @Valid @RequestBody UpdateNeuralNetworkApiSecretRequestBody
+                                updateNeuralNetworkApiSecretRequestBody) {
+    neuralNetworkService.updateApiSecret(authTokenPayload.getClaim(Field.USER_ID).asLong(),
+      updateNeuralNetworkApiSecretRequestBody);
+  }
 
   @PutMapping("/user/nn/api_root")
   @WithAuthToken

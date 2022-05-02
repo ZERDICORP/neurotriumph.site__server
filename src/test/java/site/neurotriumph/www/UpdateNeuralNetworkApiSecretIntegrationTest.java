@@ -19,7 +19,7 @@ import site.neurotriumph.www.constant.Header;
 import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.ErrorResponseBody;
-import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiRootRequestBody;
+import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiSecretRequestBody;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,8 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource("/test.properties")
-public class UpdateNeuralNetworkApiRootIntegrationTest {
-  private final String baseUrl = "/user/nn/api_root";
+public class UpdateNeuralNetworkApiSecretIntegrationTest {
+  private final String baseUrl = "/user/nn/api_secret";
 
   @Value("${app.secret}")
   private String appSecret;
@@ -52,8 +52,8 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
   @Sql(value = {"/sql/truncate_neural_network.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnNothingToUpdateError() throws Exception {
-    UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
-      new UpdateNeuralNetworkApiRootRequestBody(1L, "http://188.187.188.37:5000/v1/api");
+    UpdateNeuralNetworkApiSecretRequestBody updateNeuralNetworkApiSecretRequestBody =
+      new UpdateNeuralNetworkApiSecretRequestBody(1L, "123");
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
@@ -61,7 +61,7 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiRootRequestBody))
+        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiSecretRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -85,19 +85,19 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
      * */
     invalidIds.add(2L);
 
-    UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
-      new UpdateNeuralNetworkApiRootRequestBody(1L, "http://188.187.188.37:5000/v2/api");
+    UpdateNeuralNetworkApiSecretRequestBody updateNeuralNetworkApiSecretRequestBody =
+      new UpdateNeuralNetworkApiSecretRequestBody(1L, "1234");
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
 
     for (Long invalidId : invalidIds) {
-      updateNeuralNetworkApiRootRequestBody.setId(invalidId);
+      updateNeuralNetworkApiSecretRequestBody.setId(invalidId);
 
       this.mockMvc.perform(put(baseUrl)
           .header(Header.AUTHENTICATION_TOKEN, token)
-          .content(objectMapper.writeValueAsString(updateNeuralNetworkApiRootRequestBody))
+          .content(objectMapper.writeValueAsString(updateNeuralNetworkApiSecretRequestBody))
           .contentType(MediaType.APPLICATION_JSON))
         .andDo(print())
         .andExpect(status().isBadRequest())
@@ -124,13 +124,13 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
       .withClaim(Field.USER_ID, 1L)
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION)));
 
-    UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
-      new UpdateNeuralNetworkApiRootRequestBody(1L, "http://188.187.188.37:5000/v2/api");
+    UpdateNeuralNetworkApiSecretRequestBody updateNeuralNetworkApiSecretRequestBody =
+      new UpdateNeuralNetworkApiSecretRequestBody(1L, "1234");
 
     for (String authToken : authTokens) {
       this.mockMvc.perform(put(baseUrl)
           .header(Header.AUTHENTICATION_TOKEN, authToken)
-          .content(objectMapper.writeValueAsString(updateNeuralNetworkApiRootRequestBody))
+          .content(objectMapper.writeValueAsString(updateNeuralNetworkApiSecretRequestBody))
           .contentType(MediaType.APPLICATION_JSON))
         .andDo(print())
         .andExpect(status().isBadRequest())
@@ -141,8 +141,8 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
 
   @Test
   public void shouldReturnTokenExpiredError() throws Exception {
-    UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
-      new UpdateNeuralNetworkApiRootRequestBody(1L, "http://188.187.188.37:5000/v2/api");
+    UpdateNeuralNetworkApiSecretRequestBody updateNeuralNetworkApiSecretRequestBody =
+      new UpdateNeuralNetworkApiSecretRequestBody(1L, "1234");
 
     String authToken = JWT.create()
       .withClaim(Field.USER_ID, 1L)
@@ -151,7 +151,7 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, authToken)
-        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiRootRequestBody))
+        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiSecretRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -161,12 +161,12 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
 
   @Test
   public void shouldReturnInvalidTokenError() throws Exception {
-    UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
-      new UpdateNeuralNetworkApiRootRequestBody(1L, "http://188.187.188.37:5000/v2/api");
+    UpdateNeuralNetworkApiSecretRequestBody updateNeuralNetworkApiSecretRequestBody =
+      new UpdateNeuralNetworkApiSecretRequestBody(1L, "1234");
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, "")
-        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiRootRequestBody))
+        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiSecretRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -176,11 +176,11 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
 
   @Test
   public void shouldReturnAuthTokenNotSpecifiedError() throws Exception {
-    UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
-      new UpdateNeuralNetworkApiRootRequestBody(1L, "http://188.187.188.37:5000/v2/api");
+    UpdateNeuralNetworkApiSecretRequestBody updateNeuralNetworkApiSecretRequestBody =
+      new UpdateNeuralNetworkApiSecretRequestBody(1L, "1234");
 
     this.mockMvc.perform(put(baseUrl)
-        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiRootRequestBody))
+        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiSecretRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -191,40 +191,9 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
   @Test
   @Sql(value = {"/sql/insert_confirmed_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-  public void shouldReturnInvalidNeuralNetworkApiRootError() throws Exception {
-    List<String> invalidApiRoots = new ArrayList<>();
-    invalidApiRoots.add("http://");
-    invalidApiRoots.add("http://nn .org/");
-    invalidApiRoots.add("http://nn.org/ !");
-    invalidApiRoots.add("abc123");
-
-    UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
-      new UpdateNeuralNetworkApiRootRequestBody(1L, "http://188.187.188.37:5000/v2/api");
-
-    String token = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
-
-    for (String invalidApiRoot : invalidApiRoots) {
-      updateNeuralNetworkApiRootRequestBody.setNew_api_root(invalidApiRoot);
-
-      this.mockMvc.perform(put(baseUrl)
-          .header(Header.AUTHENTICATION_TOKEN, token)
-          .content(objectMapper.writeValueAsString(updateNeuralNetworkApiRootRequestBody))
-          .contentType(MediaType.APPLICATION_JSON))
-        .andDo(print())
-        .andExpect(status().isBadRequest())
-        .andExpect(content().string(objectMapper.writeValueAsString(
-          new ErrorResponseBody(Message.INVALID_NN_API_ROOT))));
-    }
-  }
-
-  @Test
-  @Sql(value = {"/sql/insert_confirmed_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-  @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-  public void shouldReturnNeuralNetworkApiRootCannotBeBlankError() throws Exception {
-    UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
-      new UpdateNeuralNetworkApiRootRequestBody(1L, null);
+  public void shouldReturnNeuralNetworkApiSecretCannotBeBlankError() throws Exception {
+    UpdateNeuralNetworkApiSecretRequestBody updateNeuralNetworkApiSecretRequestBody =
+      new UpdateNeuralNetworkApiSecretRequestBody(1L, null);
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
@@ -232,18 +201,18 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiRootRequestBody))
+        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiSecretRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
       .andExpect(content().string(objectMapper.writeValueAsString(
-        new ErrorResponseBody(Message.NN_API_ROOT_CANNOT_BE_BLANK))));
+        new ErrorResponseBody(Message.NN_API_SECRET_CANNOT_BE_BLANK))));
   }
 
   @Test
   public void shouldReturnIdCannotBeBlankError() throws Exception {
-    UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
-      new UpdateNeuralNetworkApiRootRequestBody(null, "http://188.187.188.37:5000/v2/api");
+    UpdateNeuralNetworkApiSecretRequestBody updateNeuralNetworkApiSecretRequestBody =
+      new UpdateNeuralNetworkApiSecretRequestBody(null, "1234");
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
@@ -251,7 +220,7 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiRootRequestBody))
+        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiSecretRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -261,8 +230,8 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
 
   @Test
   public void shouldReturnInvalidIdError() throws Exception {
-    UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
-      new UpdateNeuralNetworkApiRootRequestBody(-1L, "http://188.187.188.37:5000/v2/api");
+    UpdateNeuralNetworkApiSecretRequestBody updateNeuralNetworkApiSecretRequestBody =
+      new UpdateNeuralNetworkApiSecretRequestBody(-1L, "1234");
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
@@ -270,7 +239,7 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiRootRequestBody))
+        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiSecretRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isBadRequest())
@@ -284,8 +253,8 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
   @Sql(value = {"/sql/truncate_neural_network.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   public void shouldReturnOkStatus() throws Exception {
-    UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
-      new UpdateNeuralNetworkApiRootRequestBody(1L, "http://188.187.188.37:5000/v2/api");
+    UpdateNeuralNetworkApiSecretRequestBody updateNeuralNetworkApiSecretRequestBody =
+      new UpdateNeuralNetworkApiSecretRequestBody(1L, "1234");
 
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
@@ -293,7 +262,7 @@ public class UpdateNeuralNetworkApiRootIntegrationTest {
 
     this.mockMvc.perform(put(baseUrl)
         .header(Header.AUTHENTICATION_TOKEN, token)
-        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiRootRequestBody))
+        .content(objectMapper.writeValueAsString(updateNeuralNetworkApiSecretRequestBody))
         .contentType(MediaType.APPLICATION_JSON))
       .andDo(print())
       .andExpect(status().isOk());
