@@ -1,5 +1,6 @@
 package site.neurotriumph.www.service;
 
+import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import site.neurotriumph.www.constant.Message;
@@ -7,13 +8,12 @@ import site.neurotriumph.www.entity.NeuralNetwork;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkResponseBody;
 import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
+import site.neurotriumph.www.pojo.ToggleNeuralNetworkActivityRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiRootRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiSecretRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkNameRequestBody;
 import site.neurotriumph.www.repository.NeuralNetworkRepository;
 import site.neurotriumph.www.repository.UserRepository;
-
-import javax.transaction.Transactional;
 
 @Service
 public class NeuralNetworkService {
@@ -22,6 +22,18 @@ public class NeuralNetworkService {
 
   @Autowired
   private NeuralNetworkRepository neuralNetworkRepository;
+
+  public void toggleActivity(Long userId,
+                             ToggleNeuralNetworkActivityRequestBody toggleNeuralNetworkActivityRequestBody) {
+    userRepository.findConfirmedById(userId)
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    NeuralNetwork neuralNetwork = neuralNetworkRepository.findByIdAndOwnerId(
+        toggleNeuralNetworkActivityRequestBody.getId(), userId)
+      .orElseThrow(() -> new IllegalStateException(Message.NN_DOES_NOT_EXIST));
+
+    neuralNetwork.setActive(!neuralNetwork.isActive());
+  }
 
   @Transactional
   public void updateApiSecret(Long userId,
