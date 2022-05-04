@@ -94,7 +94,7 @@ public class UpdateNeuralNetworkApiRootUnitTest {
   }
 
   @Test
-  public void shouldFindUserAndNeuralNetworkAndUpdateName() {
+  public void shouldFindUserAndNeuralNetworkAndUpdateApiRoot() {
     UpdateNeuralNetworkApiRootRequestBody updateNeuralNetworkApiRootRequestBody =
       new UpdateNeuralNetworkApiRootRequestBody(1L, "http://188.187.188.37:5000/v2/api");
 

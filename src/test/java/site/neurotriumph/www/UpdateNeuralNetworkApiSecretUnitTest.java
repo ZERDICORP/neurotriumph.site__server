@@ -92,7 +92,7 @@ public class UpdateNeuralNetworkApiSecretUnitTest {
   }
 
   @Test
-  public void shouldFindUserAndNeuralNetworkAndUpdateName() {
+  public void shouldFindUserAndNeuralNetworkAndUpdateApiSecret() {
     UpdateNeuralNetworkApiSecretRequestBody updateNeuralNetworkApiSecretRequestBody =
       new UpdateNeuralNetworkApiSecretRequestBody(1L, "1234");
 

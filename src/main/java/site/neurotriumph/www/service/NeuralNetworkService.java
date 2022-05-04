@@ -7,6 +7,7 @@ import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.entity.NeuralNetwork;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkResponseBody;
+import site.neurotriumph.www.pojo.DeleteNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
 import site.neurotriumph.www.pojo.ToggleNeuralNetworkActivityRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiRootRequestBody;
@@ -23,6 +24,18 @@ public class NeuralNetworkService {
   @Autowired
   private NeuralNetworkRepository neuralNetworkRepository;
 
+  public void delete(Long userId, DeleteNeuralNetworkRequestBody deleteNeuralNetworkRequestBody) {
+    userRepository.findConfirmedById(userId)
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    NeuralNetwork neuralNetwork = neuralNetworkRepository.findByIdAndOwnerId(
+        deleteNeuralNetworkRequestBody.getId(), userId)
+      .orElseThrow(() -> new IllegalStateException(Message.NN_DOES_NOT_EXIST));
+
+    neuralNetworkRepository.delete(neuralNetwork);
+  }
+
+  @Transactional
   public void toggleActivity(Long userId,
                              ToggleNeuralNetworkActivityRequestBody toggleNeuralNetworkActivityRequestBody) {
     userRepository.findConfirmedById(userId)
