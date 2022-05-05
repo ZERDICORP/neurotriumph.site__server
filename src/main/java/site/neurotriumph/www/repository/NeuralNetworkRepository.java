@@ -1,6 +1,7 @@
 package site.neurotriumph.www.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import site.neurotriumph.www.entity.NeuralNetwork;
@@ -17,4 +18,8 @@ public interface NeuralNetworkRepository extends JpaRepository<NeuralNetwork, Lo
 
   @Query("SELECT nn FROM neural_network nn WHERE nn.id = :id AND nn.owner_id = :owner_id")
   Optional<NeuralNetwork> findByIdAndOwnerId(Long id, Long owner_id);
+
+  @Modifying
+  @Query("DELETE FROM neural_network nn WHERE nn.owner_id = :owner_id")
+  void deleteAllByOwnerId(Long owner_id);
 }

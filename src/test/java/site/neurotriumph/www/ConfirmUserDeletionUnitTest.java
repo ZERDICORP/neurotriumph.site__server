@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.entity.User;
+import site.neurotriumph.www.repository.NeuralNetworkRepository;
 import site.neurotriumph.www.repository.UserRepository;
 import site.neurotriumph.www.service.UserService;
 
@@ -26,6 +27,9 @@ public class ConfirmUserDeletionUnitTest {
 
   @MockBean
   private UserRepository userRepository;
+
+  @MockBean
+  private NeuralNetworkRepository neuralNetworkRepository;
 
   @Test
   public void shouldThrowIllegalStateExceptionBecauseUserDoesNotExist() {
@@ -53,6 +57,9 @@ public class ConfirmUserDeletionUnitTest {
       .findConfirmedById(ArgumentMatchers.eq(user.getId()));
 
     Mockito.verify(userRepository, Mockito.times(1))
-      .deleteById(ArgumentMatchers.eq(user.getId()));
+      .delete(ArgumentMatchers.eq(user));
+
+    Mockito.verify(neuralNetworkRepository, Mockito.times(1))
+      .deleteAllByOwnerId(ArgumentMatchers.eq(user.getId()));
   }
 }

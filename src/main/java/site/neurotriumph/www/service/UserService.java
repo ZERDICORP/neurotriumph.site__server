@@ -15,6 +15,7 @@ import site.neurotriumph.www.pojo.DeleteUserRequestBody;
 import site.neurotriumph.www.pojo.GetUserResponseBody;
 import site.neurotriumph.www.pojo.UpdateEmailRequestBody;
 import site.neurotriumph.www.pojo.UpdatePasswordRequestBody;
+import site.neurotriumph.www.repository.NeuralNetworkRepository;
 import site.neurotriumph.www.repository.UserRepository;
 
 import javax.transaction.Transactional;
@@ -29,13 +30,19 @@ public class UserService {
   private UserRepository userRepository;
 
   @Autowired
+  private NeuralNetworkRepository neuralNetworkRepository;
+
+  @Autowired
   private MailSenderService mailSenderService;
 
+  @Transactional
   public void confirmUserDeletion(Long id) {
-    userRepository.findConfirmedById(id)
+    User user = userRepository.findConfirmedById(id)
       .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
 
-    userRepository.deleteById(id);
+    userRepository.delete(user);
+
+    neuralNetworkRepository.deleteAllByOwnerId(user.getId());
   }
 
   public void deleteUser(Long id, DeleteUserRequestBody deleteUserRequestBody) {
