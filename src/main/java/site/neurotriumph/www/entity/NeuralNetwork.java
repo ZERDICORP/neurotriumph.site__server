@@ -1,16 +1,15 @@
 package site.neurotriumph.www.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity(name = "neural_network")
 @Getter
@@ -34,6 +33,9 @@ public class NeuralNetwork {
 
   @Column(nullable = false)
   private String api_secret;
+
+  @Column(columnDefinition = "TINYINT(1) DEFAULT 0", nullable = false)
+  private boolean invalid_api = true;
 
   @Column(columnDefinition = "TINYINT(1) DEFAULT 1", nullable = false)
   private boolean active = true;

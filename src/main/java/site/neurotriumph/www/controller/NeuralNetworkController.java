@@ -1,6 +1,8 @@
 package site.neurotriumph.www.controller;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import java.util.List;
+import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,13 +20,12 @@ import site.neurotriumph.www.pojo.CreateNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkResponseBody;
 import site.neurotriumph.www.pojo.DeleteNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
+import site.neurotriumph.www.pojo.GetUserNeuralNetworksResponseBodyItem;
 import site.neurotriumph.www.pojo.ToggleNeuralNetworkActivityRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiRootRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiSecretRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkNameRequestBody;
 import site.neurotriumph.www.service.NeuralNetworkService;
-
-import javax.validation.Valid;
 
 @RestController
 @Validated
@@ -32,11 +33,21 @@ public class NeuralNetworkController {
   @Autowired
   private NeuralNetworkService neuralNetworkService;
 
+  // TODO: Create GET /nn/<page:int>
+
+  @GetMapping("/user/nn/all/{page:" + Regex.POSITIVE_INTEGER_NUMBER + "}")
+  @WithAuthToken
+  public List<GetUserNeuralNetworksResponseBodyItem> getAllByUser(@AuthTokenPayload DecodedJWT authTokenPayload,
+                                                                  @PathVariable Long page) {
+    return neuralNetworkService.getAllByUser(authTokenPayload.getClaim(Field.USER_ID).asLong(),
+      page);
+  }
+
   @DeleteMapping("/nn")
   @WithAuthToken
   public void delete(@AuthTokenPayload DecodedJWT authTokenPayload,
-                              @Valid @RequestBody DeleteNeuralNetworkRequestBody
-                                deleteNeuralNetworkRequestBody) {
+                     @Valid @RequestBody DeleteNeuralNetworkRequestBody
+                       deleteNeuralNetworkRequestBody) {
     neuralNetworkService.delete(authTokenPayload.getClaim(Field.USER_ID).asLong(),
       deleteNeuralNetworkRequestBody);
   }
@@ -71,7 +82,8 @@ public class NeuralNetworkController {
   @PutMapping("/user/nn/name")
   @WithAuthToken
   public void updateName(@AuthTokenPayload DecodedJWT authTokenPayload,
-                         @Valid @RequestBody UpdateNeuralNetworkNameRequestBody updateNeuralNetworkNameRequestBody) {
+                         @Valid @RequestBody UpdateNeuralNetworkNameRequestBody
+                           updateNeuralNetworkNameRequestBody) {
     neuralNetworkService.updateName(authTokenPayload.getClaim(Field.USER_ID).asLong(),
       updateNeuralNetworkNameRequestBody);
   }
@@ -80,7 +92,8 @@ public class NeuralNetworkController {
   @WithAuthToken
   public GetNeuralNetworkResponseBody get(@AuthTokenPayload DecodedJWT authTokenPayload,
                                           @PathVariable Long id) {
-    return neuralNetworkService.get(authTokenPayload.getClaim(Field.USER_ID).asLong(), id);
+    return neuralNetworkService.get(authTokenPayload.getClaim(Field.USER_ID).asLong(),
+      id);
   }
 
   @PostMapping("/nn")

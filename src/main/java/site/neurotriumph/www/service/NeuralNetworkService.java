@@ -1,14 +1,18 @@
 package site.neurotriumph.www.service;
 
+import java.util.List;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import site.neurotriumph.www.constant.Const;
 import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.entity.NeuralNetwork;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkResponseBody;
 import site.neurotriumph.www.pojo.DeleteNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
+import site.neurotriumph.www.pojo.GetUserNeuralNetworksResponseBodyItem;
 import site.neurotriumph.www.pojo.ToggleNeuralNetworkActivityRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiRootRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiSecretRequestBody;
@@ -23,6 +27,26 @@ public class NeuralNetworkService {
 
   @Autowired
   private NeuralNetworkRepository neuralNetworkRepository;
+
+  public List<GetUserNeuralNetworksResponseBodyItem> getAllByUser(Long userId, Long page) {
+    userRepository.findConfirmedById(userId)
+      .orElseThrow(() -> new IllegalStateException(Message.USER_DOES_NOT_EXIST));
+
+    List<NeuralNetwork> neuralNetworks = neuralNetworkRepository.findAllByOwnerId(userId,
+      PageRequest.of((int) (page * Const.NEURAL_NETWORKS_PAGE_SIZE), Const.NEURAL_NETWORKS_PAGE_SIZE));
+
+    return neuralNetworks.stream()
+      .map(n -> {
+        long allTests = n.getTests_passed() + n.getTests_failed();
+        return new GetUserNeuralNetworksResponseBodyItem(
+          n.getId(),
+          allTests > 0 ? (n.getTests_passed() / allTests * 100) : 0,
+          n.getName(),
+          n.isInvalid_api(),
+          n.isActive());
+      })
+      .toList();
+  }
 
   public void delete(Long userId, DeleteNeuralNetworkRequestBody deleteNeuralNetworkRequestBody) {
     userRepository.findConfirmedById(userId)

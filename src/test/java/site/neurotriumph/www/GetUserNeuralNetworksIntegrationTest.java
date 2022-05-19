@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -29,14 +30,14 @@ import site.neurotriumph.www.constant.Header;
 import site.neurotriumph.www.constant.Message;
 import site.neurotriumph.www.constant.TokenMarker;
 import site.neurotriumph.www.pojo.ErrorResponseBody;
-import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
+import site.neurotriumph.www.pojo.GetUserNeuralNetworksResponseBodyItem;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource("/test.properties")
-public class GetNeuralNetworkIntegrationTest {
-  private final String baseUrl = "/user/nn";
+public class GetUserNeuralNetworksIntegrationTest {
+  private final String baseUrl = "/user/nn/all/";
 
   @Value("${app.secret}")
   private String appSecret;
@@ -46,36 +47,6 @@ public class GetNeuralNetworkIntegrationTest {
 
   @Autowired
   private ObjectMapper objectMapper;
-
-  @Test
-  @Sql(value = {"/sql/insert_confirmed_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-  @Sql(value = {"/sql/insert_neural_network_with_owner_id_2.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-  @Sql(value = {"/sql/truncate_neural_network.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-  @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-  public void shouldReturnNeuralNetworkDoesNotExist() throws Exception {
-    List<Long> invalidIds = new ArrayList<>();
-    /*
-     * There is no neural network with this id.
-     * */
-    invalidIds.add(1L);
-    /*
-     * The neural network with this id belongs to another user.
-     * */
-    invalidIds.add(2L);
-
-    String token = JWT.create()
-      .withClaim(Field.USER_ID, 1L)
-      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
-
-    for (Long invalidId : invalidIds) {
-      this.mockMvc.perform(get(baseUrl + "/" + invalidId)
-          .header(Header.AUTHENTICATION_TOKEN, token))
-        .andDo(print())
-        .andExpect(status().isBadRequest())
-        .andExpect(content().string(objectMapper.writeValueAsString(
-          new ErrorResponseBody(Message.NN_DOES_NOT_EXIST))));
-    }
-  }
 
   @Test
   @Sql(value = {"/sql/insert_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -141,11 +112,11 @@ public class GetNeuralNetworkIntegrationTest {
 
   @Test
   public void shouldReturnNotFoundBecauseIdDoesNotMatchRegex() throws Exception {
-    List<String> invalidIds = new ArrayList<>();
-    invalidIds.add("-1");
-    invalidIds.add("abc");
+    List<String> invalidPages = new ArrayList<>();
+    invalidPages.add("-1");
+    invalidPages.add("abc");
 
-    for (String invalidId : invalidIds) {
+    for (String invalidId : invalidPages) {
       this.mockMvc.perform(get(baseUrl + "/" + invalidId))
         .andDo(print())
         .andExpect(status().isNotFound());
@@ -157,7 +128,7 @@ public class GetNeuralNetworkIntegrationTest {
   @Sql(value = {"/sql/insert_neural_network.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_neural_network.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-  public void shouldReturnOkStatusAndUserEmail() throws Exception {
+  public void shouldReturnOkStatusAndEmptyList() throws Exception {
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
@@ -168,16 +139,43 @@ public class GetNeuralNetworkIntegrationTest {
       .andExpect(status().isOk())
       .andReturn();
 
-    GetNeuralNetworkResponseBody getNeuralNetworkResponseBody = objectMapper.readValue(
-      mvcResult.getResponse().getContentAsString(), GetNeuralNetworkResponseBody.class);
+    GetUserNeuralNetworksResponseBodyItem[] getUserNeuralNetworksResponseBodyItems = objectMapper.readValue(
+      mvcResult.getResponse().getContentAsString(), GetUserNeuralNetworksResponseBodyItem[].class);
 
-    assertNotNull(getNeuralNetworkResponseBody);
-    assertEquals("human_killer", getNeuralNetworkResponseBody.getName());
-    assertEquals("http://188.187.188.37:5000/v1/api",
-      getNeuralNetworkResponseBody.getApi_root());
-    assertEquals("123", getNeuralNetworkResponseBody.getApi_secret());
-    assertTrue(getNeuralNetworkResponseBody.isActive());
-    assertEquals(0, getNeuralNetworkResponseBody.getTests_passed());
-    assertEquals(0, getNeuralNetworkResponseBody.getTests_failed());
+    assertNotNull(getUserNeuralNetworksResponseBodyItems);
+    assertEquals(0, getUserNeuralNetworksResponseBodyItems.length);
+  }
+
+  @Test
+  @Sql(value = {"/sql/insert_confirmed_user.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+  @Sql(value = {"/sql/insert_neural_network.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+  @Sql(value = {"/sql/truncate_neural_network.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+  @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+  public void shouldReturnOkStatusAndListOfNeuralNetworks() throws Exception {
+    String token = JWT.create()
+      .withClaim(Field.USER_ID, 1L)
+      .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
+
+    MvcResult mvcResult = this.mockMvc.perform(get(baseUrl + "/0")
+        .header(Header.AUTHENTICATION_TOKEN, token))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn();
+
+    GetUserNeuralNetworksResponseBodyItem[] getUserNeuralNetworksResponseBodyItems = objectMapper.readValue(
+      mvcResult.getResponse().getContentAsString(), GetUserNeuralNetworksResponseBodyItem[].class);
+
+    assertNotNull(getUserNeuralNetworksResponseBodyItems);
+    assertEquals(1, getUserNeuralNetworksResponseBodyItems.length);
+
+    GetUserNeuralNetworksResponseBodyItem getUserNeuralNetworksResponseBodyItem =
+      getUserNeuralNetworksResponseBodyItems[0];
+
+    assertNotNull(getUserNeuralNetworksResponseBodyItem);
+    assertEquals(0, getUserNeuralNetworksResponseBodyItem.getCoeff().longValue());
+    assertEquals(1, getUserNeuralNetworksResponseBodyItem.getId().longValue());
+    assertEquals("human_killer", getUserNeuralNetworksResponseBodyItem.getName());
+    assertFalse(getUserNeuralNetworksResponseBodyItem.isInvalid_api());
+    assertTrue(getUserNeuralNetworksResponseBodyItem.isActive());
   }
 }
