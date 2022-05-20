@@ -20,6 +20,7 @@ import site.neurotriumph.www.pojo.CreateNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkResponseBody;
 import site.neurotriumph.www.pojo.DeleteNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
+import site.neurotriumph.www.pojo.GetNeuralNetworksResponseBodyItem;
 import site.neurotriumph.www.pojo.GetUserNeuralNetworksResponseBodyItem;
 import site.neurotriumph.www.pojo.ToggleNeuralNetworkActivityRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiRootRequestBody;
@@ -33,7 +34,10 @@ public class NeuralNetworkController {
   @Autowired
   private NeuralNetworkService neuralNetworkService;
 
-  // TODO: Create GET /nn/<page:int>
+  @GetMapping("/nn/{page:" + Regex.POSITIVE_INTEGER_NUMBER + "}")
+  public List<GetNeuralNetworksResponseBodyItem> getAll(@PathVariable Long page) {
+    return neuralNetworkService.getAll(page);
+  }
 
   @GetMapping("/user/nn/all/{page:" + Regex.POSITIVE_INTEGER_NUMBER + "}")
   @WithAuthToken

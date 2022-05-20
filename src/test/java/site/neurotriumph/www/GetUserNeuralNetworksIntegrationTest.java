@@ -111,13 +111,13 @@ public class GetUserNeuralNetworksIntegrationTest {
   }
 
   @Test
-  public void shouldReturnNotFoundBecauseIdDoesNotMatchRegex() throws Exception {
+  public void shouldReturnNotFoundBecausePageDoesNotMatchRegex() throws Exception {
     List<String> invalidPages = new ArrayList<>();
     invalidPages.add("-1");
     invalidPages.add("abc");
 
-    for (String invalidId : invalidPages) {
-      this.mockMvc.perform(get(baseUrl + "/" + invalidId))
+    for (String invalidPage : invalidPages) {
+      this.mockMvc.perform(get(baseUrl + "/" + invalidPage))
         .andDo(print())
         .andExpect(status().isNotFound());
     }

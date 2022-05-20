@@ -12,6 +12,7 @@ import site.neurotriumph.www.pojo.CreateNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.CreateNeuralNetworkResponseBody;
 import site.neurotriumph.www.pojo.DeleteNeuralNetworkRequestBody;
 import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
+import site.neurotriumph.www.pojo.GetNeuralNetworksResponseBodyItem;
 import site.neurotriumph.www.pojo.GetUserNeuralNetworksResponseBodyItem;
 import site.neurotriumph.www.pojo.ToggleNeuralNetworkActivityRequestBody;
 import site.neurotriumph.www.pojo.UpdateNeuralNetworkApiRootRequestBody;
@@ -27,6 +28,20 @@ public class NeuralNetworkService {
 
   @Autowired
   private NeuralNetworkRepository neuralNetworkRepository;
+
+  public List<GetNeuralNetworksResponseBodyItem> getAll(Long page) {
+    List<NeuralNetwork> neuralNetworks = neuralNetworkRepository.findAllActive(
+      PageRequest.of((int) (page * Const.NEURAL_NETWORKS_PAGE_SIZE), Const.NEURAL_NETWORKS_PAGE_SIZE));
+
+    return neuralNetworks.stream()
+      .map(n -> {
+        long allTests = n.getTests_passed() + n.getTests_failed();
+        return new GetNeuralNetworksResponseBodyItem(
+          allTests > 0 ? (n.getTests_passed() / allTests * 100) : 0,
+          n.getName());
+      })
+      .toList();
+  }
 
   public List<GetUserNeuralNetworksResponseBodyItem> getAllByUser(Long userId, Long page) {
     userRepository.findConfirmedById(userId)

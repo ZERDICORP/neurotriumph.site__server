@@ -26,4 +26,7 @@ public interface NeuralNetworkRepository extends JpaRepository<NeuralNetwork, Lo
 
   @Query("SELECT nn FROM neural_network nn WHERE nn.owner_id = :owner_id")
   List<NeuralNetwork> findAllByOwnerId(Long owner_id, Pageable pageable);
+
+  @Query("SELECT nn FROM neural_network nn WHERE nn.active = true")
+  List<NeuralNetwork> findAllActive(Pageable pageable);
 }
