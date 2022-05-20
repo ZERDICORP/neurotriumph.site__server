@@ -1,6 +1,11 @@
 package site.neurotriumph.www;
 
+import java.util.Optional;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -15,13 +20,6 @@ import site.neurotriumph.www.pojo.GetNeuralNetworkResponseBody;
 import site.neurotriumph.www.repository.NeuralNetworkRepository;
 import site.neurotriumph.www.repository.UserRepository;
 import site.neurotriumph.www.service.NeuralNetworkService;
-
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -116,6 +114,9 @@ public class GetNeuralNetworkUnitTest {
 
     Mockito.verify(spiedNeuralNetwork, Mockito.times(1))
       .getApi_secret();
+
+    Mockito.verify(spiedNeuralNetwork, Mockito.times(1))
+      .isInvalid_api();
 
     Mockito.verify(spiedNeuralNetwork, Mockito.times(1))
       .isActive();

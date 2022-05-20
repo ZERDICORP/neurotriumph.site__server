@@ -136,6 +136,7 @@ public class NeuralNetworkService {
       neuralNetwork.getName(),
       neuralNetwork.getApi_root(),
       neuralNetwork.getApi_secret(),
+      neuralNetwork.isInvalid_api(),
       neuralNetwork.isActive(),
       neuralNetwork.getTests_passed(),
       neuralNetwork.getTests_failed());

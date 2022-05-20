@@ -13,6 +13,7 @@ public class GetNeuralNetworkResponseBody {
   private String name;
   private String api_root;
   private String api_secret;
+  private boolean invalid_api;
   private boolean active;
   private int tests_passed;
   private int tests_failed;

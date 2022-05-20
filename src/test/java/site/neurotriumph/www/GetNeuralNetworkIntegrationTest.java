@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -157,7 +158,7 @@ public class GetNeuralNetworkIntegrationTest {
   @Sql(value = {"/sql/insert_neural_network.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = {"/sql/truncate_neural_network.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
   @Sql(value = {"/sql/truncate_user.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-  public void shouldReturnOkStatusAndUserEmail() throws Exception {
+  public void shouldReturnOkStatusAndNeuralNetwork() throws Exception {
     String token = JWT.create()
       .withClaim(Field.USER_ID, 1L)
       .sign(Algorithm.HMAC256(appSecret + TokenMarker.AUTHENTICATION));
@@ -176,6 +177,7 @@ public class GetNeuralNetworkIntegrationTest {
     assertEquals("http://188.187.188.37:5000/v1/api",
       getNeuralNetworkResponseBody.getApi_root());
     assertEquals("123", getNeuralNetworkResponseBody.getApi_secret());
+    assertFalse(getNeuralNetworkResponseBody.isInvalid_api());
     assertTrue(getNeuralNetworkResponseBody.isActive());
     assertEquals(0, getNeuralNetworkResponseBody.getTests_passed());
     assertEquals(0, getNeuralNetworkResponseBody.getTests_failed());
